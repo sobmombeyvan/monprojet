@@ -1,5 +1,6 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { PUBLIC_DATA_TAG } from "@/lib/supabase/public";
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { getSessionUser } from "@/lib/auth/session";
@@ -99,30 +100,97 @@ export async function saveConsultantAdmin(consultantId: string, input: AdminCons
     body: `L'équipe ${site.name} a mis à jour votre profil professionnel.`, link: "/consultant/profile",
   });
   revalidatePath("/[locale]/admin/consultants", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
   revalidatePath("/[locale]/experts/[slug]", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
   revalidatePath("/[locale]/find-expert", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
   return { ok: true };
 }
 
-/** Crée un compte consultant (invitation par e-mail pour définir le mot de passe) puis ouvre l'éditeur. */
+/** Gives a user the consultant role and a (hidden) expert profile; returns the profile id. */
+async function ensureExpert(service: ReturnType<typeof createAdminClient>, userId: string, fullName: string) {
+  const { data: role } = await service.from("roles").select("id").eq("key", "consultant").single();
+  if (role) {
+    const { error } = await service.from("user_roles").upsert({ user_id: userId, role_id: role.id }, { onConflict: "user_id,role_id", ignoreDuplicates: true });
+    if (error) throw new Error(error.message);
+  }
+  const { data: existing } = await service.from("consultants").select("id").eq("user_id", userId).maybeSingle();
+  if (existing) return existing.id as string;
+  const base = fullName.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "consultant";
+  const { data: created, error } = await service
+    .from("consultants")
+    .insert({ user_id: userId, slug: `${base}-${userId.slice(0, 4)}`, professional_name: fullName, title_fr: "Titre professionnel", is_published: false })
+    .select("id")
+    .single();
+  if (error || !created) throw new Error(error?.message ?? "Création du profil impossible.");
+  return created.id as string;
+}
+
+/**
+ * Crée un compte expert puis ouvre l'éditeur de profil.
+ *  - e-mail déjà inscrit → ce compte devient expert ;
+ *  - mot de passe temporaire fourni → compte créé immédiatement (aucun e-mail nécessaire) ;
+ *  - sinon → invitation par e-mail pour définir le mot de passe.
+ */
 export async function createConsultantAccount(_: unknown, form: FormData): Promise<Result> {
   await requireAdmin();
   const parsed = newConsultantSchema.safeParse(Object.fromEntries(form));
-  if (!parsed.success) return { errors: ["Nom (2 caractères minimum) et e-mail valide requis."] };
+  if (!parsed.success) return { errors: ["Nom (2 caractères minimum), e-mail valide, et mot de passe d'au moins 8 caractères s'il est renseigné."] };
+  const { fullName, email, password } = parsed.data;
   const service = createAdminClient();
   const locale = await getLocale();
-  const { data, error } = await service.auth.admin.inviteUserByEmail(parsed.data.email, {
-    data: { full_name: parsed.data.fullName, account_type: "consultant", locale },
-    redirectTo: `${site.url}/auth/callback?next=${locale === "en" ? "/en" : ""}/reset-password`,
-  });
-  if (error || !data.user) return { errors: [error?.message ?? "Impossible de créer le compte."] };
-  const base = parsed.data.fullName.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "consultant";
-  const { data: created, error: insertError } = await service
-    .from("consultants")
-    .insert({ user_id: data.user.id, slug: `${base}-${data.user.id.slice(0, 4)}`, professional_name: parsed.data.fullName, title_fr: "Titre professionnel", is_published: false })
-    .select("id")
-    .single();
-  if (insertError || !created) return { errors: [insertError?.message ?? "Création du profil impossible."] };
-  redirect({ href: `/admin/consultants/${created.id}`, locale });
+
+  let userId: string;
+  const { data: existing } = await service.from("profiles").select("id").eq("email", email).maybeSingle();
+  if (existing) {
+    userId = existing.id; // already registered: turn this account into an expert
+  } else if (password) {
+    const { data, error } = await service.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name: fullName, account_type: "consultant", locale },
+    });
+    if (error || !data.user) return { errors: [error?.message ?? "Impossible de créer le compte."] };
+    userId = data.user.id;
+  } else {
+    const { data, error } = await service.auth.admin.inviteUserByEmail(email, {
+      data: { full_name: fullName, account_type: "consultant", locale },
+      redirectTo: `${site.url}/auth/callback?next=${locale === "en" ? "/en" : ""}/reset-password`,
+    });
+    if (error || !data.user) {
+      const limited = /rate limit/i.test(error?.message ?? "");
+      return {
+        errors: [limited
+          ? "Limite d'envoi d'e-mails atteinte : renseignez un mot de passe temporaire pour créer le compte sans e-mail."
+          : error?.message ?? "Impossible de créer le compte."],
+      };
+    }
+    userId = data.user.id;
+  }
+
+  let consultantId: string;
+  try {
+    consultantId = await ensureExpert(service, userId, fullName);
+  } catch (e) {
+    return { errors: [e instanceof Error ? e.message : "Création du profil impossible."] };
+  }
+  revalidatePath("/[locale]/admin/users", "page");
+  revalidatePath("/[locale]/admin/consultants", "page");
+  redirect({ href: `/admin/consultants/${consultantId}`, locale });
   return { ok: true };
+}
+
+/** Transforme un utilisateur existant en expert (rôle + profil masqué), puis ouvre son profil. */
+export async function makeExpertAction(form: FormData) {
+  await requireAdmin();
+  const userId = String(form.get("userId") ?? "");
+  if (!/^[0-9a-f-]{36}$/.test(userId)) return;
+  const service = createAdminClient();
+  const { data: p } = await service.from("profiles").select("full_name, email").eq("id", userId).single();
+  const consultantId = await ensureExpert(service, userId, p?.full_name || p?.email?.split("@")[0] || "Expert");
+  revalidatePath("/[locale]/admin/users", "page");
+  revalidatePath("/[locale]/admin/consultants", "page");
+  redirect({ href: `/admin/consultants/${consultantId}`, locale: await getLocale() });
 }

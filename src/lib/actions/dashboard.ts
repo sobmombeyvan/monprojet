@@ -1,5 +1,6 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { PUBLIC_DATA_TAG } from "@/lib/supabase/public";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth/session";
@@ -29,6 +30,7 @@ export async function submitReviewAction(bookingId: string, rating: number, comm
   });
   if (error) return { error: "forbidden" };
   revalidatePath("/[locale]/dashboard/bookings", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
   return { ok: true };
 }
 
@@ -75,6 +77,7 @@ export async function saveConsultantProfileAction(_: unknown, form: FormData) {
     if (values.length) await supabase.from(table).insert(values.slice(0, 30).map((v) => ({ consultant_id: saved.id, [col]: v })));
   }
   revalidatePath("/[locale]/consultant", "layout");
+  revalidateTag(PUBLIC_DATA_TAG);
   return { ok: true };
 }
 
@@ -97,6 +100,7 @@ export async function addQualificationAction(form: FormData) {
     consultant_id: c.id, title: p.data.title, institution: p.data.institution || null, level: p.data.level, year_obtained: p.data.year ?? null,
   });
   revalidatePath("/[locale]/consultant/profile", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 /** Called after the browser uploaded the file to the private bucket (Storage RLS restricts the folder). */
@@ -114,6 +118,7 @@ export async function registerDocumentAction(input: { kind: string; path: string
   if (error) return { error: "generic" };
   // A SQL trigger moves an unverified profile into the admin review queue
   revalidatePath("/[locale]/consultant/profile", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
   return { ok: true };
 }
 
@@ -133,12 +138,14 @@ export async function addAvailabilityAction(form: FormData) {
   const supabase = await createClient();
   await supabase.from("availability").insert({ consultant_id: id, weekday: p.data.weekday, start_time: p.data.startTime, end_time: p.data.endTime });
   revalidatePath("/[locale]/consultant/availability", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 export async function deleteAvailabilityAction(form: FormData) {
   const supabase = await createClient();
   await supabase.from("availability").delete().eq("id", uuid.parse(form.get("id"))); // RLS: owner only
   revalidatePath("/[locale]/consultant/availability", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 export async function addExceptionAction(form: FormData) {
@@ -152,6 +159,7 @@ export async function addExceptionAction(form: FormData) {
     reason: p.data.reason || null,
   });
   revalidatePath("/[locale]/consultant/availability", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 export async function saveConsultantServiceAction(form: FormData) {
@@ -173,6 +181,7 @@ export async function saveConsultantServiceAction(form: FormData) {
     { onConflict: "consultant_id,service_id,duration_minutes" },
   );
   revalidatePath("/[locale]/consultant/services", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 export async function toggleConsultantServiceAction(form: FormData) {
@@ -180,6 +189,7 @@ export async function toggleConsultantServiceAction(form: FormData) {
   const id = uuid.parse(form.get("id"));
   await supabase.from("consultant_services").update({ is_active: form.get("active") === "1" }).eq("id", id);
   revalidatePath("/[locale]/consultant/services", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 // ─── Consultant: bookings ────────────────────────────────────────
@@ -189,12 +199,14 @@ export async function setMeetingLinkAction(form: FormData) {
   const supabase = await createClient();
   await supabase.from("bookings").update({ meeting_url: p.data.url }).eq("id", p.data.id); // guard: only meeting_url
   revalidatePath("/[locale]/consultant/bookings", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 export async function completeBookingAction(form: FormData) {
   const supabase = await createClient();
   await supabase.rpc("complete_booking", { p_booking_id: uuid.parse(form.get("id")) });
   revalidatePath("/[locale]/consultant/bookings", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 export async function replyReviewAction(form: FormData) {
@@ -204,4 +216,5 @@ export async function replyReviewAction(form: FormData) {
   // RLS + guard_reviews: a consultant can only set consultant_reply on reviews of their own profile
   await supabase.from("reviews").update({ consultant_reply: p.data.reply }).eq("id", p.data.id);
   revalidatePath("/[locale]/consultant/reviews", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }

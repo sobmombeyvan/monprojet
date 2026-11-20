@@ -676,5 +676,10 @@
     "audio": "Appel audio",
     "phone": "Téléphoner",
     "hint": "La salle d’appel s’ouvre dans un nouvel onglet. Autorisez le micro (et la caméra pour la vidéo)."
+  },
+  "spaces": {
+    "client": "Espace client",
+    "consultant": "Espace consultant",
+    "admin": "Administration"
   }
 }

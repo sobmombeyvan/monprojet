@@ -11,6 +11,7 @@ export default async function AdminLayout({ children, params }: { children: Reac
   return (
     <DashboardShell
       title={t("title")}
+      variant="admin"
       items={[
         { href: "/admin", label: t("overview"), icon: "overview" },
         { href: "/admin/verifications", label: t("verifications"), icon: "verifications" },

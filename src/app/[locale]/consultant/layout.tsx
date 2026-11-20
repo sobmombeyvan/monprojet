@@ -9,6 +9,7 @@ export default async function ConsultantLayout({ children, params }: { children:
   return (
     <DashboardShell
       title={t("overview")}
+      variant="consultant"
       items={[
         { href: "/consultant/dashboard", label: t("overview"), icon: "overview" },
         { href: "/consultant/bookings", label: t("bookings"), icon: "bookings" },

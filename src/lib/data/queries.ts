@@ -1,6 +1,15 @@
 import "server-only";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient, PUBLIC_DATA_TAG } from "@/lib/supabase/public";
+
+/**
+ * Public data is the same for every visitor: read it without cookies and keep it in
+ * Next's data cache. Every admin / consultant change calls revalidateTag(PUBLIC_DATA_TAG).
+ */
+const cached = <A extends unknown[], R>(fn: (...args: A) => Promise<R>, key: string, revalidate = 300) =>
+  unstable_cache(fn, [key], { revalidate, tags: [PUBLIC_DATA_TAG] });
 
 export type ConsultantCard = {
   id: string;
@@ -49,8 +58,8 @@ export type ExpertFilters = {
 
 export const PAGE_SIZE = 12;
 
-export async function searchConsultants(f: ExpertFilters) {
-  const supabase = await createClient();
+export const searchConsultants = cached(async function searchConsultants(f: ExpertFilters) {
+  const supabase = createPublicClient();
   const page = Math.max(1, Number(f.page) || 1);
   const num = (v?: string) => (v && !Number.isNaN(Number(v)) ? Number(v) : null);
   const { data, error } = await supabase.rpc("search_consultants", {
@@ -83,11 +92,11 @@ export async function searchConsultants(f: ExpertFilters) {
     for (const c of certs ?? []) rows.find((r) => r.id === c.consultant_id)?.certifications.push({ title: c.title, issuer: c.issuer });
   }
   return { rows, total: rows[0]?.total_count ?? 0, page };
-}
+}, "search-consultants", 60);
 
 /** Countries, specialties, languages and services used by filters and forms. */
-export const getReferenceData = cache(async () => {
-  const supabase = await createClient();
+export const getReferenceData = cache(cached(async () => {
+  const supabase = createPublicClient();
   const [countries, specialties, languages, services] = await Promise.all([
     supabase.from("countries").select("id, slug, iso2, name_fr, name_en, region, flag_emoji, is_popular, lon, lat, goals, opportunities_fr, opportunities_en, main_languages, aliases, overview_fr, overview_en").eq("status", "published").order("name_fr"),
     supabase.from("specialties").select("id, slug, name_fr, name_en").order("name_fr"),
@@ -100,7 +109,7 @@ export const getReferenceData = cache(async () => {
     languages: languages.data ?? [],
     services: services.data ?? [],
   };
-});
+}, "reference-data", 300));
 
 export async function getConsultantBySlug(slug: string) {
   const supabase = await createClient();
@@ -130,18 +139,18 @@ export async function getConsultantBySlug(slug: string) {
   return { ...data, reviews: reviews ?? [] };
 }
 
-export async function getPublishedCountries() {
-  const supabase = await createClient();
+export const getPublishedCountries = cached(async function getPublishedCountries() {
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("countries")
     .select("id, slug, iso2, name_fr, name_en, region, flag_emoji, overview_fr, overview_en, is_popular, lon, lat, goals, opportunities_fr, opportunities_en, main_languages, aliases")
     .eq("status", "published")
     .order("name_fr");
   return data ?? [];
-}
+}, "published-countries", 300);
 
-export async function getCountry(slug: string) {
-  const supabase = await createClient();
+export const getCountry = cached(async function getCountry(slug: string) {
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("countries")
     .select("*, visa_categories(*)")
@@ -149,10 +158,10 @@ export async function getCountry(slug: string) {
     .eq("status", "published")
     .maybeSingle();
   return data;
-}
+}, "country", 300);
 
-export async function getArticles(opts: { locale: string; q?: string; category?: string; country?: string; limit?: number }) {
-  const supabase = await createClient();
+export const getArticles = cached(async function getArticles(opts: { locale: string; q?: string; category?: string; country?: string; limit?: number }) {
+  const supabase = createPublicClient();
   // `!inner` turns the embedded filter into a filter on the articles themselves
   const countryEmbed = opts.country ? "countries!inner" : "countries";
   let query = supabase
@@ -166,7 +175,7 @@ export async function getArticles(opts: { locale: string; q?: string; category?:
   if (opts.country) query = query.eq("countries.slug", opts.country);
   const { data } = await query;
   return data ?? [];
-}
+}, "articles", 300);
 
 export async function getArticle(slug: string) {
   const supabase = await createClient();
@@ -179,15 +188,19 @@ export async function getArticle(slug: string) {
   return data;
 }
 
-export async function getPublicSetting<T>(key: string, fallback: T): Promise<T> {
-  const supabase = await createClient();
+const getPublicSettingValue = cached(async (key: string) => {
+  const supabase = createPublicClient();
   const { data } = await supabase.from("platform_settings").select("value").eq("key", key).maybeSingle();
-  return (data?.value as T) ?? fallback;
+  return (data?.value as unknown) ?? null;
+}, "public-setting", 300);
+
+export async function getPublicSetting<T>(key: string, fallback: T): Promise<T> {
+  return ((await getPublicSettingValue(key)) as T | null) ?? fallback;
 }
 
 /** Nombre d'experts publiés par destination (pour le globe, les cartes et les fiches pays). */
-export async function getExpertCountsByCountry() {
-  const supabase = await createClient();
+export const getExpertCountsByCountry = cached(async function getExpertCountsByCountry() {
+  const supabase = createPublicClient();
   const { data } = await supabase.from("consultant_countries").select("countries(slug), consultants!inner(is_published)").eq("consultants.is_published", true);
   const counts: Record<string, number> = {};
   for (const r of data ?? []) {
@@ -195,7 +208,7 @@ export async function getExpertCountsByCountry() {
     if (slug) counts[slug] = (counts[slug] ?? 0) + 1;
   }
   return counts;
-}
+}, "expert-counts", 120);
 
 /** Destinations affichées sur le globe de l'accueil, avec la ville représentative. */
 export const GLOBE_CITIES: Record<string, { city: string; short?: string }> = {

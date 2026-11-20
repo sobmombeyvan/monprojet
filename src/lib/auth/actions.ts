@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { homeFor } from "@/lib/auth/session";
 import { hit } from "@/lib/rate-limit";
 import { forgotSchema, loginSchema, registerSchema, updatePasswordSchema } from "@/lib/validation/schemas";
 
@@ -30,12 +31,16 @@ export async function signInAction(_: ActionState, form: FormData): Promise<Acti
   const parsed = loginSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) return { fieldErrors: fieldErrors(parsed.error.issues) };
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) return { error: "invalidCredentials" };
-  const next = safeNext(form.get("next"));
-  // `next` may already contain the /en prefix
   const locale = await getLocale();
-  const href = next.replace(/^\/en(?=\/|$)/, "") || "/dashboard";
+  // Each role lands in its own space unless a specific page was requested
+  const { data: roleRows } = await supabase.from("user_roles").select("roles(key)").eq("user_id", data.user.id);
+  const roles = (roleRows ?? []).map((r) => (r.roles as unknown as { key: string }).key);
+  const home = homeFor({ isAdmin: roles.includes("admin") || roles.includes("super_admin"), isConsultant: roles.includes("consultant") });
+  const requested = typeof form.get("next") === "string" && String(form.get("next")) !== "" ? safeNext(form.get("next")) : home;
+  // `next` may already contain the /en prefix
+  const href = requested.replace(/^\/en(?=\/|$)/, "") || home;
   redirect({ href, locale });
   return { ok: true };
 }

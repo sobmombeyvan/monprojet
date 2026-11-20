@@ -18,10 +18,11 @@ export interface SessionUser {
 /** Current user (validated against Supabase Auth) with roles — memoized per request. */
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  // Verified locally (asymmetric JWT signing key) — avoids a round-trip to Supabase Auth on every page
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims;
+  if (!claims?.sub) return null;
+  const user = { id: claims.sub, email: (claims.email as string | undefined) ?? null };
   const [{ data: profile }, { data: roleRows }] = await Promise.all([
     supabase.from("profiles").select("full_name, email").eq("id", user.id).single(),
     supabase.from("user_roles").select("roles(key)").eq("user_id", user.id),
@@ -47,4 +48,11 @@ export async function requireUser(locale: string, roles?: AppRole[]) {
     redirect({ href: "/dashboard", locale });
   }
   return user!;
+}
+
+/** Each role has its own space: admin → /admin, consultant → /consultant/dashboard, client → /dashboard. */
+export function homeFor(user: Pick<SessionUser, "isAdmin" | "isConsultant"> | null | undefined) {
+  if (user?.isAdmin) return "/admin";
+  if (user?.isConsultant) return "/consultant/dashboard";
+  return "/dashboard";
 }

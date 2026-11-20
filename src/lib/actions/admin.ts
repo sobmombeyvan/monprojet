@@ -1,5 +1,6 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { PUBLIC_DATA_TAG } from "@/lib/supabase/public";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth/session";
@@ -41,6 +42,7 @@ export async function setVerificationAction(form: FormData) {
     });
   }
   revalidatePath("/[locale]/admin", "layout");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 export async function reviewDocumentAction(form: FormData) {
@@ -52,12 +54,14 @@ export async function reviewDocumentAction(form: FormData) {
     .update({ status, reviewer_id: user.id, reviewed_at: new Date().toISOString(), review_note: String(form.get("note") ?? "").slice(0, 500) || null })
     .eq("id", id);
   revalidatePath("/[locale]/admin/verifications", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 export async function togglePublishAction(form: FormData) {
   const { supabase } = await admin();
   await supabase.from("consultants").update({ is_published: form.get("publish") === "1" }).eq("id", uuid.parse(form.get("consultantId")));
   revalidatePath("/[locale]/admin/consultants", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 export async function updateServicePriceAction(form: FormData) {
@@ -67,6 +71,7 @@ export async function updateServicePriceAction(form: FormData) {
   const price = raw === "" ? null : z.coerce.number().min(0).max(10_000_000).parse(raw);
   await supabase.from("services").update({ base_price: price, pricing_type: price === null ? "quote" : "fixed", is_bookable: price !== null }).eq("id", id);
   revalidatePath("/[locale]/admin/settings", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 export async function updateSettingsAction(form: FormData) {
@@ -80,6 +85,7 @@ export async function updateSettingsAction(form: FormData) {
     { key: "cancellation_policy", value: { free_until_hours: free, reschedule_until_hours: free }, is_public: true, updated_by: user.id },
   ]);
   revalidatePath("/[locale]/admin/settings", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 export async function setCommissionStatusAction(form: FormData) {
@@ -90,6 +96,7 @@ export async function setCommissionStatusAction(form: FormData) {
     .update({ status, paid_out_at: status === "paid_out" ? new Date().toISOString() : null })
     .eq("id", uuid.parse(form.get("id")));
   revalidatePath("/[locale]/admin/commissions", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 export async function setRoleAction(form: FormData) {
@@ -103,6 +110,7 @@ export async function setRoleAction(form: FormData) {
   if (grant) await supabase.from("user_roles").upsert({ user_id: target, role_id: r.id, granted_by: user.id });
   else await supabase.from("user_roles").delete().eq("user_id", target).eq("role_id", r.id);
   revalidatePath("/[locale]/admin/users", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 export async function setContentStatusAction(form: FormData) {
@@ -117,4 +125,5 @@ export async function setContentStatusAction(form: FormData) {
   if (status === "published" && table === "countries") patch.last_verified_at = new Date().toISOString().slice(0, 10);
   await supabase.from(table).update(patch).eq("id", uuid.parse(form.get("id")));
   revalidatePath(`/[locale]/admin/${table}`, "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }

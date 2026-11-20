@@ -10,7 +10,7 @@ export default async function NewConsultantPage({ params }: { params: Promise<{ 
     <>
       <PageTitle title="Ajouter un consultant" />
       <Card className="max-w-xl p-6">
-        <p className="mb-5 text-sm leading-6 text-muted">Le consultant reçoit un e-mail d'invitation pour définir son mot de passe. Son profil reste masqué jusqu'à ce que vous le publiiez.</p>
+        <p className="mb-5 text-sm leading-6 text-muted">Créez le compte de l&apos;expert puis complétez son profil. Le profil reste masqué jusqu&apos;à ce que vous le publiiez.</p>
         <NewConsultantForm />
       </Card>
     </>

@@ -19,9 +19,10 @@ export async function Header() {
   ];
   const accountLinks = user
     ? [
-        { href: "/dashboard", label: t("dashboard") },
-        ...(user.isConsultant ? [{ href: "/consultant/dashboard", label: t("consultantSpace") }] : []),
+        // Only the user's own space(s) — the client space is for clients only
         ...(user.isAdmin ? [{ href: "/admin", label: t("admin") }] : []),
+        ...(user.isConsultant ? [{ href: "/consultant/dashboard", label: t("consultantSpace") }] : []),
+        ...(!user.isAdmin && !user.isConsultant ? [{ href: "/dashboard", label: t("dashboard") }] : []),
       ]
     : [];
 

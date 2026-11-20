@@ -1,5 +1,6 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { PUBLIC_DATA_TAG } from "@/lib/supabase/public";
 import { z } from "zod";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
@@ -25,6 +26,7 @@ export async function toggleSavedConsultant(consultantId: string): Promise<{ sav
     await supabase.from("saved_consultants").insert({ user_id: user.id, consultant_id: consultantId });
   }
   revalidatePath("/[locale]/dashboard/saved-experts", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
   return { saved: !existing };
 }
 
@@ -34,6 +36,7 @@ export async function markNotificationsRead() {
   const supabase = await createClient();
   await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", user.id).is("read_at", null);
   revalidatePath("/[locale]/dashboard/notifications", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
 }
 
 export async function updateProfileAction(_: unknown, form: FormData) {
@@ -54,6 +57,7 @@ export async function updateProfileAction(_: unknown, form: FormData) {
     .eq("id", user.id);
   if (error) return { error: "generic" };
   revalidatePath("/[locale]/dashboard", "layout");
+  revalidateTag(PUBLIC_DATA_TAG);
   return { ok: true };
 }
 

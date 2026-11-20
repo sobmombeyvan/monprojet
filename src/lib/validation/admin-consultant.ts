@@ -65,4 +65,6 @@ export type AdminConsultantInput = z.infer<typeof adminConsultantSchema>;
 export const newConsultantSchema = z.object({
   fullName: z.string().trim().min(2).max(120),
   email: z.string().trim().toLowerCase().email(),
+  /** Optional: create the account immediately with this temporary password (no e-mail needed). */
+  password: z.union([z.literal(""), z.string().min(8).max(72)]).optional(),
 });
