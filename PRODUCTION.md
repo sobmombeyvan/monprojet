@@ -57,10 +57,11 @@ Ordre conseillé : **staging d'abord** (projet Supabase + déploiement de test, 
 | `UPSTASH_REDIS_REST_URL/TOKEN` | recommandé (limitation de débit partagée) |
 
 4. Domaine : Settings › Domains › ajoutez `votre-domaine.com` et suivez les instructions DNS.
-5. Tâche planifiée : `vercel.json` appelle `/api/cron/maintenance` toutes les 5 minutes (libère les créneaux non payés, envoie les e-mails). Sur le plan gratuit de Vercel (1 exécution/jour), utilisez plutôt pg_cron dans Supabase :
-   ```sql
-   select cron.schedule('release-holds', '* * * * *', $$select public.release_expired_holds()$$);
-   ```
+5. Tâche planifiée (toutes les 5 min : libère les créneaux non payés, revérifie les paiements Fapshi, envoie les e-mails) :
+   - Le plan **Hobby** de Vercel n'autorise qu'une exécution par jour : `vercel.json` lance donc `/api/cron/maintenance` une fois par jour (6 h UTC).
+   - Le rythme de 5 minutes est assuré par **Supabase** (gratuit) : SQL Editor › collez `supabase/cron-setup.sql`, remplacez `YOUR_SITE_URL` et `YOUR_CRON_SECRET` (le même `CRON_SECRET` que dans Vercel) › Run.
+   - Vérification après quelques minutes : `select status_code, content::text from net._http_response order by created desc limit 5;` → 200.
+   - Sur le plan Pro de Vercel, vous pouvez à la place remettre `"*/5 * * * *"` dans `vercel.json`.
 
 ## 4. Paiements
 

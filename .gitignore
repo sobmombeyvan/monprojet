@@ -11,3 +11,7 @@ supabase/.temp
 coverage
 .DS_Store
 .env.backup*
+
+# local logs
+*.log
+audit.txt
