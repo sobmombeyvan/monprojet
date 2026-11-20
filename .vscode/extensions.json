@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "supabase.vscode-supabase-extension",
+    "lokalise.i18n-ally",
+    "mtxr.sqltools",
+    "ckolkman.vscode-postgres"
+  ]
+}

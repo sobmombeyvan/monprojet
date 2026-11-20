@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+/* ── Design tokens (marque configurable dans src/config/site.ts) ─────── */
+@theme {
+  --color-navy: #102b46;
+  --color-navy-900: #0b1f33;
+  --color-navy-700: #1b3d5e;
+  --color-navy-50: #eaf0f5;
+  --color-teal: #25afa5;
+  --color-teal-600: #187e77;
+  --color-teal-50: #eaf6f5;
+  --color-cloud: #f3f6f9;
+  --color-ink: #122436;
+  --color-muted: #627386;
+  --color-line: #e4e9ef;
+  --color-danger: #b4471f;
+  --color-success: #15803d;
+  --color-warning: #b45309;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), var(--font-inter), ui-sans-serif, sans-serif;
+  --radius-card: 12px;
+  --shadow-card: 0 1px 0 rgb(16 43 70 / 0.04);
+  --shadow-lift: 0 20px 50px -24px rgb(16 43 70 / 0.35);
+}
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body { @apply bg-white text-ink font-sans; -webkit-tap-highlight-color: transparent; font-feature-settings: "cv11", "ss01"; }
+  :focus-visible { @apply outline-2 outline-offset-2 outline-teal; }
+  h1, h2, h3, h4 { @apply text-navy; font-family: var(--font-display); letter-spacing: -0.02em; }
+  /* iPhone : évite le zoom automatique de Safari sur les champs < 16px */
+  @media (max-width: 640px) { input, select, textarea { font-size: 16px !important; } }
+}
+
+@layer components {
+  .container-page { @apply mx-auto w-full max-w-[76rem] px-5 sm:px-8; }
+  .section { @apply py-20 sm:py-28; }
+  .display { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.035em; line-height: 1.08; }
+  .eyebrow { @apply text-sm font-medium text-muted; }
+  .iso { @apply inline-grid h-[1.35rem] min-w-8 place-items-center rounded-md border border-[#d5dde5] px-1.5 text-[0.68rem] font-bold tracking-wider text-navy; }
+  .link { @apply font-semibold text-teal-600 underline-offset-4 hover:underline; }
+  .prose-content h2 { @apply mt-8 mb-3 text-xl font-bold; }
+  .prose-content h3 { @apply mt-6 mb-2 text-lg font-semibold; }
+  .prose-content p { @apply my-3 leading-8 text-slate-700; }
+  .prose-content ul { @apply my-3 list-disc pl-6 text-slate-700; }
+  .prose-content ol { @apply my-3 list-decimal pl-6 text-slate-700; }
+  .prose-content li { @apply my-1 leading-7; }
+  .prose-content blockquote { @apply my-5 border-l-2 border-teal pl-5 font-medium text-navy; }
+  .prose-content a { @apply text-teal-600 underline underline-offset-2; }
+  .prose-content strong { @apply font-semibold text-navy; }
+}
+
+/* ── Animations (désactivées si l'utilisateur réduit les animations) ── */
+@layer utilities {
+  .reveal { animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 70ms); }
+  .sheet { animation: sheetup 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .shimmer { background: linear-gradient(90deg, #eef2f6 0%, #f7f9fb 40%, #eef2f6 80%); background-size: 200% 100%; animation: shimmer 1.1s linear infinite; }
+  .lift { transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.25s, box-shadow 0.25s; }
+  .lift:hover { transform: translateY(-3px); border-color: #c9d3dd; box-shadow: var(--shadow-lift); }
+  .live-dot { position: relative; width: 7px; height: 7px; border-radius: 999px; background: var(--color-teal); }
+  .live-dot::after { content: ""; position: absolute; inset: -4px; border-radius: 999px; border: 1.5px solid var(--color-teal); animation: ping 1.8s ease-out infinite; }
+  .draw-path { stroke-dasharray: 900; stroke-dashoffset: 900; animation: draw 1.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; animation-delay: calc(400ms + var(--i, 0) * 140ms); }
+  .pulse-svg { transform-box: fill-box; transform-origin: center; animation: pulse 2.2s ease-out infinite; }
+  .fade-pin { animation: fadein 0.6s ease both; animation-delay: calc(300ms + var(--i, 0) * 45ms); transition: opacity 0.3s; }
+}
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes sheetup { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@keyframes ping { from { transform: scale(0.4); opacity: 0.9; } to { transform: scale(1.4); opacity: 0; } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes pulse { 0% { transform: scale(0.7); opacity: 0.8; } 100% { transform: scale(2.6); opacity: 0; } }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .sheet, .shimmer, .live-dot::after, .draw-path, .pulse-svg, .fade-pin { animation: none !important; stroke-dashoffset: 0; }
+  .lift:hover { transform: none; }
+}

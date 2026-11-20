@@ -1,0 +1,54 @@
+
+> monprojet@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.29 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://172.20.10.2:3000
+   - Environments: .env
+   - Experiments (use with caution):
+     · serverActions
+
+ ✓ Starting...
+ ○ Compiling middleware ...
+ ✓ Compiled middleware in 3.7s
+ ✓ Ready in 16.3s
+ ○ Compiling /[locale] ...
+ ✓ Compiled /[locale] in 24.5s
+ GET / 200 in 34323ms
+ GET /en 200 in 5063ms
+ ○ Compiling /_not-found/page ...
+ ✓ Compiled /_not-found/page in 1417ms
+ GET /experts 404 in 1883ms
+ ○ Compiling /[locale]/login ...
+ ✓ Compiled /[locale]/login in 4.1s
+ GET /login 200 in 17782ms
+ GET / 200 in 3060ms
+ GET /en 200 in 2618ms
+ GET /login 200 in 1780ms
+ GET / 200 in 2933ms
+ ⨯ Failed to generate static paths for /[locale]:
+[Error [PageNotFoundError]: Cannot find module for page: /[locale]/page] {
+  type: 'PageNotFoundError',
+  code: 'ENOENT'
+}
+ ○ Compiling /[locale]/find-expert ...
+ GET /en 200 in 8590ms
+ ✓ Compiled /[locale]/find-expert in 48.9s
+ GET /en/find-expert 200 in 53755ms
+ GET /en/find-expert 200 in 30565ms
+ GET /en/countries 200 in 86064ms
+ GET /en/countries 200 in 40416ms
+ GET /en/countries 200 in 40414ms
+ GET /en/knowledge 200 in 85685ms
+ GET /en/services 200 in 89466ms
+ GET /en/knowledge 200 in 5297ms
+ GET /en/about 200 in 93235ms
+ GET /en/find-expert 200 in 7028ms
+ GET /en/find-expert 200 in 7297ms
+ GET /en/find-expert 200 in 7260ms
+ GET /en/services 200 in 3804ms
+ GET /en/countries 200 in 2672ms
+ GET /en/knowledge 200 in 3828ms
+ GET /en/about 200 in 6473ms
+[?25h
