@@ -4,6 +4,7 @@ import { PUBLIC_DATA_TAG } from "@/lib/supabase/public";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth/session";
+import { isAllowedPhotoUrl } from "@/lib/avatar";
 import {
   availabilitySchema,
   consultantProfileSchema,
@@ -59,6 +60,8 @@ export async function saveConsultantProfileAction(_: unknown, form: FormData) {
     city: d.city || null,
     timezone: d.timezone,
     methods: d.methods,
+    // bitmoji ("avatar:…") or a photo from this project's avatars bucket — anything else is ignored
+    photo_url: typeof form.get("photoUrl") === "string" && isAllowedPhotoUrl(String(form.get("photoUrl"))) ? String(form.get("photoUrl")) : null,
   };
   const { data: existing } = await supabase.from("consultants").select("id").eq("user_id", user.id).maybeSingle();
   const { data: saved, error } = existing
@@ -74,7 +77,7 @@ export async function saveConsultantProfileAction(_: unknown, form: FormData) {
   ];
   for (const [table, col, values] of sets) {
     await supabase.from(table).delete().eq("consultant_id", saved.id);
-    if (values.length) await supabase.from(table).insert(values.slice(0, 30).map((v) => ({ consultant_id: saved.id, [col]: v })));
+    if (values.length) await supabase.from(table).insert(values.slice(0, 100).map((v) => ({ consultant_id: saved.id, [col]: v })));
   }
   revalidatePath("/[locale]/consultant", "layout");
   revalidateTag(PUBLIC_DATA_TAG);
@@ -131,12 +134,32 @@ async function myConsultantId() {
   return data?.id ?? null;
 }
 
+/** Day groups offered in the "Jour" select, besides single days (0 = Sunday … 6 = Saturday). */
+const DAY_GROUPS: Record<string, number[]> = { all: [0, 1, 2, 3, 4, 5, 6], weekdays: [1, 2, 3, 4, 5], weekend: [0, 6] };
+
 export async function addAvailabilityAction(form: FormData) {
   const id = await myConsultantId();
-  const p = availabilitySchema.safeParse(Object.fromEntries(form));
-  if (!id || !p.success) return;
+  const raw = String(form.get("weekday") ?? "");
+  const days = DAY_GROUPS[raw] ?? [Number(raw)];
+  const p = availabilitySchema.safeParse({ weekday: days[0], startTime: form.get("startTime"), endTime: form.get("endTime") });
+  if (!id || !p.success || days.some((d) => !Number.isInteger(d) || d < 0 || d > 6)) return;
   const supabase = await createClient();
-  await supabase.from("availability").insert({ consultant_id: id, weekday: p.data.weekday, start_time: p.data.startTime, end_time: p.data.endTime });
+  // Skip days that already have exactly this slot (no duplicates when re-applying "every day")
+  const { data: existing } = await supabase.from("availability").select("weekday, start_time, end_time").eq("consultant_id", id);
+  const same = (e: { start_time: string; end_time: string }) => e.start_time.slice(0, 5) === p.data.startTime && e.end_time.slice(0, 5) === p.data.endTime;
+  const rows = days
+    .filter((d) => !(existing ?? []).some((e) => e.weekday === d && same(e)))
+    .map((d) => ({ consultant_id: id, weekday: d, start_time: p.data.startTime, end_time: p.data.endTime }));
+  if (rows.length) await supabase.from("availability").insert(rows);
+  revalidatePath("/[locale]/consultant/availability", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
+}
+
+export async function clearAvailabilityAction() {
+  const id = await myConsultantId();
+  if (!id) return;
+  const supabase = await createClient();
+  await supabase.from("availability").delete().eq("consultant_id", id); // RLS: owner only
   revalidatePath("/[locale]/consultant/availability", "page");
   revalidateTag(PUBLIC_DATA_TAG);
 }

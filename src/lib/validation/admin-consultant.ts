@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isAllowedPhotoUrl } from "@/lib/avatar";
 
 const uuid = z.string().uuid();
 const methods = z.array(z.enum(["video", "phone", "in_person", "chat", "other"])).min(1, "Choisissez au moins un mode de consultation.");
@@ -14,7 +15,7 @@ export const adminConsultantSchema = z
     shortBioEn: z.string().trim().max(280).optional().default(""),
     bioFr: z.string().trim().max(6000).optional().default(""),
     bioEn: z.string().trim().max(6000).optional().default(""),
-    photoUrl: z.string().url().max(500).nullable().optional(),
+    photoUrl: z.string().max(500).refine(isAllowedPhotoUrl, "Photo invalide.").nullable().optional(),
     city: z.string().trim().max(80).optional().default(""),
     yearsExperience: z.coerce.number().int().min(0).max(70),
     timezone: z.string().trim().max(60),

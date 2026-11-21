@@ -1,9 +1,10 @@
 import * as React from "react";
 import { AlertCircle, CheckCircle2, Info, Inbox, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { avatarSrc } from "@/lib/avatar";
 
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("rounded-[var(--radius-card)] border border-line bg-white shadow-[var(--shadow-card)]", className)} {...props} />;
+  return <div className={cn("rounded-(--radius-card) border border-line bg-white shadow-(--shadow-card)", className)} {...props} />;
 }
 
 export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
@@ -82,8 +83,8 @@ export function EmptyState({
   icon?: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="flex flex-col items-center rounded-[var(--radius-card)] border border-dashed border-line bg-cloud/50 px-6 py-14 text-center">
-      <div className="mb-4 grid size-12 place-items-center rounded-full bg-white text-teal shadow-[var(--shadow-card)]">
+    <div className="flex flex-col items-center rounded-(--radius-card) border border-dashed border-line bg-cloud/50 px-6 py-14 text-center">
+      <div className="mb-4 grid size-12 place-items-center rounded-full bg-white text-teal shadow-(--shadow-card)">
         <Icon className="size-5" />
       </div>
       <h3 className="text-base font-semibold">{title}</h3>
@@ -93,25 +94,10 @@ export function EmptyState({
   );
 }
 
+/** Photo, chosen bitmoji ("avatar:<seed>") or — by default — a bitmoji generated from the name. */
 export function Avatar({ src, name, size = 56 }: { src?: string | null; name: string; size?: number }) {
-  const initials = name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase())
-    .join("");
-  if (src) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={name} width={size} height={size} className="rounded-full object-cover" style={{ width: size, height: size }} />;
-  }
-  return (
-    <div
-      aria-label={name}
-      className="grid shrink-0 place-items-center rounded-full bg-navy font-semibold text-white"
-      style={{ width: size, height: size, fontSize: size * 0.36 }}
-    >
-      {initials}
-    </div>
-  );
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={avatarSrc(src, name)} alt={name} width={size} height={size} className="shrink-0 rounded-full bg-cloud object-cover" style={{ width: size, height: size }} />;
 }
 
 export function StatCard({ label, value, hint }: { label: string; value: React.ReactNode; hint?: string }) {

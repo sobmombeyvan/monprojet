@@ -160,7 +160,7 @@ export function SolutionsWizard({
               <div><span className="display text-4xl text-teal">01</span><h2 className="display mt-2 text-2xl">{t("inform")}</h2><p className="mt-2 text-sm text-muted">{t("informText")}</p></div>
               <div className="grid gap-4 sm:grid-cols-2">
                 {result.dests.map((slug) => { const c = countries.find((x) => x.slug === slug); if (!c) return null; return (
-                  <Link key={slug} href={`/countries/${slug}`} className="lift flex flex-col rounded-[var(--radius-card)] border border-line bg-white p-5">
+                  <Link key={slug} href={`/countries/${slug}`} className="lift flex flex-col rounded-(--radius-card) border border-line bg-white p-5">
                     <span className="flex items-center gap-3"><span className="iso">{c.iso}</span><span className="font-semibold text-navy">{c.name}</span></span>
                     <span className="mt-3 text-sm leading-6 text-muted">{c.overview}</span>
                     <span className="mt-3 flex flex-wrap gap-1.5">{c.opportunities.map((o) => <span key={o} className="rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-semibold text-teal-600">{o}</span>)}</span>

@@ -214,7 +214,7 @@ export function BookingWizard({
                       setOfferId(undefined);
                       setStep(2);
                     }}
-                    className={cn("flex flex-col rounded-xl border p-4 text-left transition-all hover:border-teal hover:shadow-[var(--shadow-card)]", serviceId === s.id ? "border-teal bg-teal-50" : "border-line bg-white")}
+                    className={cn("flex flex-col rounded-xl border p-4 text-left transition-all hover:border-teal hover:shadow-(--shadow-card)", serviceId === s.id ? "border-teal bg-teal-50" : "border-line bg-white")}
                   >
                     <Icon className="size-6 text-teal" />
                     <span className="mt-3 font-semibold text-navy">{s.name}</span>

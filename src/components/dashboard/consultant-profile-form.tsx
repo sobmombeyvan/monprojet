@@ -1,7 +1,8 @@
 "use client";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useTranslations } from "next-intl";
 import { saveConsultantProfileAction } from "@/lib/actions/dashboard";
+import { PhotoPicker } from "@/components/experts/photo-picker";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/form-controls";
 import { Alert } from "@/components/ui/primitives";
@@ -9,11 +10,22 @@ import { Alert } from "@/components/ui/primitives";
 type Opt = { value: string; label: string };
 type State = { ok?: boolean; error?: string; fieldErrors?: Record<string, string> };
 
-function CheckGroup({ name, legend, options, selected }: { name: string; legend: string; options: Opt[]; selected: string[] }) {
+function CheckGroup({ name, legend, options, selected, bulk }: { name: string; legend: string; options: Opt[]; selected: string[]; bulk?: boolean }) {
+  const toggleAll = (e: React.MouseEvent<HTMLButtonElement>, on: boolean) => {
+    e.currentTarget.closest("fieldset")?.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`).forEach((cb) => { cb.checked = on; });
+  };
   return (
     <fieldset>
-      <legend className="mb-2 text-sm font-medium text-navy">{legend}</legend>
-      <div className="flex max-h-48 flex-wrap gap-2 overflow-y-auto">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <legend className="text-sm font-medium text-navy">{legend}</legend>
+        {bulk && (
+          <span className="flex gap-3 text-xs font-semibold">
+            <button type="button" className="text-teal-600 hover:underline" onClick={(e) => toggleAll(e, true)}>Tout sélectionner</button>
+            <button type="button" className="text-muted hover:underline" onClick={(e) => toggleAll(e, false)}>Tout désélectionner</button>
+          </span>
+        )}
+      </div>
+      <div className="flex max-h-60 flex-wrap gap-2 overflow-y-auto">
         {options.map((o) => (
           <label key={o.value} className="cursor-pointer">
             <input type="checkbox" name={name} value={o.value} defaultChecked={selected.includes(o.value)} className="peer sr-only" />
@@ -42,14 +54,19 @@ export function ConsultantProfileForm({
 }) {
   const t = useTranslations();
   const [state, action, pending] = useActionState<State, FormData>(saveConsultantProfileAction as never, {});
+  const [photo, setPhoto] = useState<string | null>((c?.photo_url as string | null) ?? null);
   const v = (k: string) => (c?.[k] as string | null) ?? "";
   const rel = (k: string, col: string) => ((c?.[k] as Record<string, string>[] | undefined) ?? []).map((r) => String(r[col]));
   const slugDefault = v("slug") || defaultName.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const err = (k: string) => (state.fieldErrors?.[k] ? t("validation.required") : undefined);
 
   return (
-    <form action={action} className="grid gap-5 sm:grid-cols-2">
+    <form action={action} className="grid grid-cols-1 gap-5 sm:grid-cols-2">
       {state.ok && <Alert tone="success" className="sm:col-span-2">{t("common.saved")}</Alert>}
+      <div className="min-w-0 rounded-xl border border-line p-4 sm:col-span-2">
+        <p className="mb-3 text-sm font-medium text-navy">Photo ou bitmoji</p>
+        <PhotoPicker value={photo} onChange={setPhoto} name={v("professional_name") || defaultName} inputName="photoUrl" />
+      </div>
       {state.error && <Alert tone="error" className="sm:col-span-2">{state.error === "slug_taken" ? "URL déjà utilisée / URL already taken" : t("booking.errors.generic")}</Alert>}
       <Field label={t("auth.fullName")} htmlFor="professionalName" error={err("professionalName")}>
         <Input id="professionalName" name="professionalName" defaultValue={v("professional_name") || defaultName} required />
@@ -109,8 +126,8 @@ export function ConsultantProfileForm({
           selected={(c?.methods as string[]) ?? ["video"]}
         />
       </div>
-      <div className="sm:col-span-2"><CheckGroup name="countries" legend={t("experts.countriesCovered")} options={countries} selected={rel("consultant_countries", "country_id")} /></div>
-      <div className="sm:col-span-2"><CheckGroup name="specialties" legend={t("experts.specialties")} options={specialties} selected={rel("consultant_specialties", "specialty_id")} /></div>
+      <div className="sm:col-span-2"><CheckGroup bulk name="countries" legend={t("experts.countriesCovered")} options={countries} selected={rel("consultant_countries", "country_id")} /></div>
+      <div className="sm:col-span-2"><CheckGroup bulk name="specialties" legend="Services proposés" options={specialties} selected={rel("consultant_specialties", "specialty_id")} /></div>
       <div className="sm:col-span-2"><CheckGroup name="languages" legend={t("experts.languages")} options={languages} selected={rel("consultant_languages", "language_code")} /></div>
       <div className="sm:col-span-2">
         <Button type="submit" loading={pending}>{t("common.save")}</Button>

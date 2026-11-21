@@ -35,12 +35,19 @@ insert into public.specialties (slug, name_fr, name_en) values
   ('work-permit', 'Permis de travail', 'Work permit'),
   ('permanent-residence', 'Résidence permanente', 'Permanent residence'),
   ('family-reunification', 'Regroupement familial', 'Family reunification'),
-  ('tourist-visa', 'Visa touristique', 'Tourist visa'),
+  ('tourist-visa', 'Visa touristique et visite familiale', 'Tourist visa and family visit'),
   ('university-admission', 'Admission universitaire', 'University admission'),
   ('career-orientation', 'Orientation professionnelle', 'Career guidance'),
   ('ausbildung', 'Ausbildung (formation en alternance)', 'Ausbildung (vocational training)'),
-  ('document-review', 'Revue de dossier', 'Application review')
-on conflict do nothing;
+  ('document-review', 'Revue de dossier', 'Application review'),
+  ('international-mobility', 'Immigration et mobilité internationale', 'Immigration and international mobility'),
+  ('study-abroad', 'Études à l''étranger', 'Studying abroad'),
+  ('work-immigration', 'Immigration professionnelle', 'Work immigration'),
+  ('academic-orientation', 'Orientation académique', 'Academic guidance'),
+  ('profile-assessment', 'Évaluation de profil', 'Profile assessment'),
+  ('application-preparation', 'Préparation administrative de dossiers', 'Administrative file preparation'),
+  ('settlement-integration', 'Installation et intégration à l''étranger', 'Settlement and integration abroad')
+on conflict (slug) do update set name_fr = excluded.name_fr, name_en = excluded.name_en;
 
 insert into public.categories (slug, name_fr, name_en, sort_order) values
   ('study-abroad', 'Études à l''étranger', 'Study Abroad', 1),

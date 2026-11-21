@@ -25,7 +25,7 @@ export function UserMenu({
         <DropdownMenu.Content
           align="end"
           sideOffset={8}
-          className="z-50 min-w-52 rounded-xl border border-line bg-white p-1.5 shadow-[var(--shadow-lift)]"
+          className="z-50 min-w-52 rounded-xl border border-line bg-white p-1.5 shadow-(--shadow-lift)"
         >
           {links.map((l) => (
             <DropdownMenu.Item key={l.href} asChild>

@@ -40,8 +40,8 @@ export function DashboardShell({
   const SpaceIcon = v.icon;
   return (
     <div className="bg-cloud">
-      <div className="container-page grid gap-6 py-8 lg:grid-cols-[240px_1fr]">
-        <aside>
+      <div className="container-page grid grid-cols-1 gap-6 py-8 lg:grid-cols-[240px_1fr]">
+        <aside className="min-w-0">
           <p className={cn("mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1", v.badge)}>
             <SpaceIcon className="size-3.5" /> {t(variant)}
           </p>

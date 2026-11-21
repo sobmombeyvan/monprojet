@@ -29,7 +29,7 @@ export function MobileNav({
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-navy/40 lg:hidden" />
-        <Dialog.Content className="fixed inset-y-0 right-0 z-50 flex w-[86%] max-w-sm flex-col bg-white shadow-[var(--shadow-lift)] lg:hidden">
+        <Dialog.Content className="fixed inset-y-0 right-0 z-50 flex w-[86%] max-w-sm flex-col bg-white shadow-(--shadow-lift) lg:hidden">
           <div className="flex h-16 items-center justify-between border-b border-line px-4">
             <Dialog.Title asChild>
               <div onClick={close}>

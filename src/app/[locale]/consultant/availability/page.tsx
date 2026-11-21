@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/form-controls";
 import { Alert, Card, CardBody, CardHeader, EmptyState } from "@/components/ui/primitives";
 import { PageTitle } from "@/components/dashboard/shell";
-import { addAvailabilityAction, addExceptionAction, deleteAvailabilityAction } from "@/lib/actions/dashboard";
+import { addAvailabilityAction, addExceptionAction, clearAvailabilityAction, deleteAvailabilityAction } from "@/lib/actions/dashboard";
 import { requireUser } from "@/lib/auth/session";
 import { getMyConsultant } from "@/lib/data/consultant";
 import { createClient } from "@/lib/supabase/server";
@@ -63,9 +63,14 @@ export default async function AvailabilityPage({ params }: { params: Promise<{ l
             <CardBody>
               <form action={addAvailabilityAction} className="space-y-3">
                 <div>
-                  <Label htmlFor="weekday">{t("booking.date")}</Label>
-                  <Select id="weekday" name="weekday" defaultValue="1">
-                    {order.map((d) => <option key={d} value={d}>{days[d]}</option>)}
+                  <Label htmlFor="weekday">Jour / Day</Label>
+                  <Select id="weekday" name="weekday" defaultValue="all">
+                    <option value="all">Tous les jours / Every day</option>
+                    <option value="weekdays">Du lundi au vendredi / Mon–Fri</option>
+                    <option value="weekend">Week-end (sam. + dim.)</option>
+                    <optgroup label="Un seul jour / One day">
+                      {order.map((d) => <option key={d} value={d}>{days[d]}</option>)}
+                    </optgroup>
                   </Select>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -74,6 +79,11 @@ export default async function AvailabilityPage({ params }: { params: Promise<{ l
                 </div>
                 <Button type="submit" className="w-full">{t("consultant.addSlot")}</Button>
               </form>
+              {(slots ?? []).length > 0 && (
+                <form action={clearAvailabilityAction} className="mt-3">
+                  <Button type="submit" variant="ghost" size="sm" className="w-full text-danger">Tout effacer / Clear all</Button>
+                </form>
+              )}
             </CardBody>
           </Card>
           <Card>

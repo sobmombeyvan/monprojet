@@ -42,7 +42,7 @@ export function DestinationsExplorer({ destinations, origin }: { destinations: D
               <p className="mt-5 max-w-xl text-lg leading-8 text-white/70">{t("heroText", { count: destinations.length })}</p>
             </div>
             <div className="flex flex-col gap-3">
-              <label className="flex items-center gap-3 rounded-2xl bg-white px-4 shadow-[var(--shadow-lift)]">
+              <label className="flex items-center gap-3 rounded-2xl bg-white px-4 shadow-(--shadow-lift)">
                 <Search className="size-5 text-muted" />
                 <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("searchPlaceholder")} className="h-14 w-full bg-transparent text-[15px] text-ink outline-none" aria-label={t("searchPlaceholder")} />
               </label>
@@ -81,7 +81,7 @@ export function DestinationsExplorer({ destinations, origin }: { destinations: D
               </g>
             </svg>
             {h && (
-              <div className="pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-xl bg-white px-4 py-3 text-ink shadow-[var(--shadow-lift)]"
+              <div className="pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-xl bg-white px-4 py-3 text-ink shadow-(--shadow-lift)"
                 style={{ left: `${(mapX(h.lon) / MAP_W) * 100}%`, top: `${(mapY(h.lat) / MAP_H) * 100}%`, marginTop: -14 }}>
                 <p className="flex items-center gap-2 font-semibold text-navy"><span className="iso">{h.iso}</span>{h.name}</p>
                 <p className="mt-1 text-xs text-muted">{h.opportunities.slice(0, 2).join(" · ")}</p>
@@ -112,7 +112,7 @@ export function DestinationsExplorer({ destinations, origin }: { destinations: D
         ) : (
           <div key={`${q}|${region}|${goal}`} className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {list.map((d, i) => (
-              <Link key={d.slug} href={`/countries/${d.slug}`} className="reveal lift group flex flex-col rounded-[var(--radius-card)] border border-line bg-white p-6" style={{ "--i": i } as React.CSSProperties}
+              <Link key={d.slug} href={`/countries/${d.slug}`} className="reveal lift group flex flex-col rounded-(--radius-card) border border-line bg-white p-6" style={{ "--i": i } as React.CSSProperties}
                 onMouseEnter={() => setHover(d.slug)} onMouseLeave={() => setHover(null)}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">

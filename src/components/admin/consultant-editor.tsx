@@ -1,10 +1,10 @@
 "use client";
-import { Upload, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Alert, Avatar } from "@/components/ui/primitives";
-import { createClient } from "@/lib/supabase/client";
+import { PhotoPicker } from "@/components/experts/photo-picker";
 import { saveConsultantAdmin } from "@/lib/actions/admin-consultants";
 import type { AdminConsultantInput } from "@/lib/validation/admin-consultant";
 import { cn } from "@/lib/utils";
@@ -38,9 +38,16 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
 function Text({ label, value, onChange, ...rest }: { label: string; value: string | number; onChange: (v: string) => void } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value">) {
   return <label className="block"><span className="mb-1.5 block text-sm font-semibold text-navy">{label}</span><input {...rest} value={value} onChange={(e) => onChange(e.target.value)} className={field} /></label>;
 }
-function Chips({ options, value, onChange }: { options: Opt[]; value: string[]; onChange: (v: string[]) => void }) {
+function Chips({ options, value, onChange, bulk }: { options: Opt[]; value: string[]; onChange: (v: string[]) => void; bulk?: boolean }) {
+  const all = options.length > 0 && options.every((o) => value.includes(o.value));
   return (
     <div className="flex flex-wrap gap-2">
+      {bulk && (
+        <button type="button" onClick={() => onChange(all ? [] : options.map((o) => o.value))}
+          className="rounded-full border border-dashed border-teal px-3.5 py-1.5 text-sm font-semibold text-teal-600 hover:bg-teal-50">
+          {all ? "Tout désélectionner" : "Tout sélectionner"}
+        </button>
+      )}
       {options.map((o) => {
         const on = value.includes(o.value);
         return (
@@ -57,7 +64,7 @@ const RemoveBtn = ({ onClick }: { onClick: () => void }) => (
 
 /** Éditeur complet d'un profil consultant (administration). */
 export function ConsultantEditor({
-  consultantId, userId, publicSlug, initial, countries, specialties, languages, services,
+  consultantId, publicSlug, initial, countries, specialties, languages, services,
 }: {
   consultantId: string; userId: string; publicSlug: string; initial: AdminConsultantInput;
   countries: Opt[]; specialties: Opt[]; languages: Opt[]; services: ServiceOpt[];
@@ -66,22 +73,11 @@ export function ConsultantEditor({
   const [d, setD] = useState<AdminConsultantInput>(initial);
   const [errors, setErrors] = useState<string[]>([]);
   const [saved, setSaved] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [pending, start] = useTransition();
   const set = <K extends keyof AdminConsultantInput>(k: K, v: AdminConsultantInput[K]) => { setSaved(false); setD((cur) => ({ ...cur, [k]: v })); };
   const setItem = <K extends "certifications" | "qualifications" | "services" | "availability">(k: K, i: number, patch: Partial<AdminConsultantInput[K][number]>) =>
     set(k, d[k].map((x, j) => (j === i ? { ...x, ...patch } : x)) as AdminConsultantInput[K]);
 
-  async function uploadPhoto(file: File) {
-    if (!/^image\/(png|jpe?g|webp)$/.test(file.type) || file.size > 2 * 1024 * 1024) return setErrors(["Photo : PNG, JPG ou WebP, 2 Mo maximum."]);
-    setUploading(true);
-    const supabase = createClient();
-    const path = `${userId}/${crypto.randomUUID()}.${file.type.split("/")[1].replace("jpeg", "jpg")}`;
-    const { error } = await supabase.storage.from("avatars").upload(path, file, { contentType: file.type });
-    if (error) setErrors([`Photo : ${error.message}`]);
-    else set("photoUrl", supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl);
-    setUploading(false);
-  }
 
   function save() {
     setErrors([]);
@@ -109,13 +105,8 @@ export function ConsultantEditor({
 
       <Section title="Identité">
         <div className="grid gap-5 sm:grid-cols-2">
-          <div className="flex items-center gap-4 sm:col-span-2">
-            <Avatar src={d.photoUrl} name={d.professionalName} size={72} />
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-[10px] border border-[#d5dde5] px-4 py-2 text-sm font-semibold text-navy hover:border-navy">
-              <Upload className="size-4" /> {uploading ? "Envoi…" : "Changer la photo"}
-              <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(e) => e.target.files?.[0] && uploadPhoto(e.target.files[0])} />
-            </label>
-            {d.photoUrl && <Button type="button" variant="ghost" size="sm" onClick={() => set("photoUrl", null)}>Retirer</Button>}
+          <div className="sm:col-span-2">
+            <PhotoPicker value={d.photoUrl ?? null} onChange={(v) => set("photoUrl", v)} name={d.professionalName} />
           </div>
           <Text label="Nom professionnel" value={d.professionalName} onChange={(v) => set("professionalName", v)} required />
           <Text label="URL du profil (slug)" value={d.slug} onChange={(v) => set("slug", v)} pattern="[a-z0-9]+(-[a-z0-9]+)*" />
@@ -154,7 +145,7 @@ export function ConsultantEditor({
           {([["isPublished", "Profil publié", "Visible dans la recherche"], ["acceptsBookings", "Accepte les réservations", "Créneaux proposés aux clients"]] as const).map(([k, l, h]) => (
             <label key={k} className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-line px-4 py-3">
               <span><span className="block text-sm font-semibold text-navy">{l}</span><span className="block text-xs text-muted">{h}</span></span>
-              <input type="checkbox" checked={d[k]} onChange={(e) => set(k, e.target.checked)} className="size-5 accent-[#102B46]" />
+              <input type="checkbox" checked={d[k]} onChange={(e) => set(k, e.target.checked)} className="size-5 accent-navy" />
             </label>
           ))}
         </div>
@@ -162,8 +153,8 @@ export function ConsultantEditor({
 
       <Section title="Expertise">
         <div className="space-y-6">
-          <div><p className="mb-2 text-sm font-semibold text-navy">Destinations couvertes</p><Chips options={countries} value={d.countries} onChange={(v) => set("countries", v)} /></div>
-          <div><p className="mb-2 text-sm font-semibold text-navy">Spécialités</p><Chips options={specialties} value={d.specialties} onChange={(v) => set("specialties", v)} /></div>
+          <div><p className="mb-2 text-sm font-semibold text-navy">Destinations couvertes</p><Chips bulk options={countries} value={d.countries} onChange={(v) => set("countries", v)} /></div>
+          <div><p className="mb-2 text-sm font-semibold text-navy">Services proposés</p><Chips bulk options={specialties} value={d.specialties} onChange={(v) => set("specialties", v)} /></div>
           <div><p className="mb-2 text-sm font-semibold text-navy">Langues</p><Chips options={languages} value={d.languages} onChange={(v) => set("languages", v)} /></div>
           <div><p className="mb-2 text-sm font-semibold text-navy">Modes de consultation</p><Chips options={METHODS} value={d.methods} onChange={(v) => set("methods", v as AdminConsultantInput["methods"])} /></div>
         </div>

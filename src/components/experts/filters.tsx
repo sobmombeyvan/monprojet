@@ -139,7 +139,7 @@ export async function ExpertFiltersForm({ refData, values }: { refData: Ref; val
       {/* Mobile: collapsible panel */}
       <form method="get" action={action} aria-label={t("experts.filters")} className="lg:hidden">
         {values.sort && <input type="hidden" name="sort" value={values.sort} />}
-      <details className="group rounded-[var(--radius-card)] border border-line bg-white">
+      <details className="group rounded-(--radius-card) border border-line bg-white">
         <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 font-semibold text-navy [&::-webkit-details-marker]:hidden">
           <SlidersHorizontal className="size-4" /> {t("experts.filters")}
           {activeCount > 0 && <span className="rounded-full bg-teal px-2 py-0.5 text-xs font-semibold text-white">{activeCount}</span>}
@@ -149,7 +149,7 @@ export async function ExpertFiltersForm({ refData, values }: { refData: Ref; val
       </details>
       </form>
       {/* Desktop: sticky sidebar */}
-      <form method="get" action={action} aria-label={t("experts.filters")} className="sticky top-24 hidden max-h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain rounded-[var(--radius-card)] border border-line bg-white p-5 lg:block">
+      <form method="get" action={action} aria-label={t("experts.filters")} className="sticky top-24 hidden max-h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain rounded-(--radius-card) border border-line bg-white p-5 lg:block">
         {values.sort && <input type="hidden" name="sort" value={values.sort} />}
         <p className="mb-4 flex items-center gap-2 font-semibold text-navy">
           <SlidersHorizontal className="size-4" /> {t("experts.filters")}

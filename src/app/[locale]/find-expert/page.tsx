@@ -75,7 +75,7 @@ export default async function FindExpertPage({
         <div className="container-page relative py-8 sm:py-16">
           <p className="text-sm text-white/60">{t("experts.title")}</p>
           <h1 className="display mt-3 max-w-3xl text-[1.85rem] leading-[1.1] text-white sm:mt-4 sm:text-5xl">{t("experts.heroTitle")}</h1>
-          <form method="get" action={locale === "en" ? "/en/find-expert" : "/find-expert"} className="mt-6 flex max-w-3xl flex-col gap-2 rounded-2xl bg-white p-2 shadow-[var(--shadow-lift)] sm:mt-8 sm:flex-row">
+          <form method="get" action={locale === "en" ? "/en/find-expert" : "/find-expert"} className="mt-6 flex max-w-3xl flex-col gap-2 rounded-2xl bg-white p-2 shadow-(--shadow-lift) sm:mt-8 sm:flex-row">
             <label className="flex flex-1 items-center gap-3 px-3">
               <Search className="size-5 text-muted" />
               <input name="q" defaultValue={filters.q} placeholder={t("experts.searchPlaceholder")} className="h-11 w-full min-w-0 bg-transparent text-[15px] text-ink outline-none sm:h-12" aria-label={t("experts.keyword")} />

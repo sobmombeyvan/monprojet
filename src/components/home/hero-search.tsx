@@ -29,7 +29,7 @@ export function HeroSearch({ countries, specialties, services }: { countries: Op
       ref={form}
       onSubmit={(e) => { e.preventDefault(); router.push({ pathname: "/find-expert", query: values() }); }}
       role="search"
-      className="rounded-2xl bg-white p-2 text-ink shadow-[var(--shadow-lift)]"
+      className="rounded-2xl bg-white p-2 text-ink shadow-(--shadow-lift)"
     >
       <div className="grid gap-1 sm:grid-cols-3">
         {fields.map(([n, label, any, items], i) => (

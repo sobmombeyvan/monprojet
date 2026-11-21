@@ -54,7 +54,7 @@ export default async function KnowledgePage({
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {articles.map((a) => (
               <Link key={a.slug} href={`/knowledge/${a.slug}`} className="group">
-                <Card className="flex h-full flex-col p-6 transition-shadow group-hover:shadow-[var(--shadow-lift)]">
+                <Card className="flex h-full flex-col p-6 transition-shadow group-hover:shadow-(--shadow-lift)">
                   <div className="flex flex-wrap gap-1.5">
                     <Badge tone="teal">{loc(a.categories as unknown as Record<string, unknown>, "name", locale)}</Badge>
                     {a.countries && <Badge>{loc(a.countries as unknown as Record<string, unknown>, "name", locale)}</Badge>}

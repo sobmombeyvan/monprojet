@@ -16,7 +16,7 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
     <>
       <PageHero title={t("faqTitle")} />
       <div className="container-page max-w-3xl py-12">
-        <ul className="divide-y divide-line rounded-[var(--radius-card)] border border-line bg-white">
+        <ul className="divide-y divide-line rounded-(--radius-card) border border-line bg-white">
           {items.map((it) => (
             <li key={it.q}>
               <details className="group px-5 py-4">

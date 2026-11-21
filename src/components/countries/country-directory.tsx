@@ -30,7 +30,7 @@ export function CountryDirectory({ countries }: { countries: Country[] }) {
           <h2 className="text-lg font-semibold">{t(`regions.${r}` as "regions.europe")}</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.filter((c) => c.region === r).map((c) => (
-              <Link key={c.slug} href={`/countries/${c.slug}`} className="group flex gap-4 rounded-[var(--radius-card)] border border-line bg-white p-5 transition-all hover:border-teal hover:shadow-[var(--shadow-card)]">
+              <Link key={c.slug} href={`/countries/${c.slug}`} className="group flex gap-4 rounded-(--radius-card) border border-line bg-white p-5 transition-all hover:border-teal hover:shadow-(--shadow-card)">
                 <span className="text-3xl" aria-hidden>{c.flag_emoji}</span>
                 <span>
                   <span className="block font-semibold text-navy group-hover:text-teal-600">{locale === "en" ? c.name_en : c.name_fr}</span>

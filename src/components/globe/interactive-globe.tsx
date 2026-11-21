@@ -201,7 +201,7 @@ export function InteractiveGlobe({
           aria-label={t("globeFrom", { city: origin.city })}
         />
         {current && (
-          <div className="sheet absolute inset-x-3 bottom-3 rounded-2xl bg-white/95 p-4 text-ink shadow-[var(--shadow-lift)] backdrop-blur sm:inset-x-6 sm:bottom-6 sm:p-5" aria-live="polite">
+          <div className="sheet absolute inset-x-3 bottom-3 rounded-2xl bg-white/95 p-4 text-ink shadow-(--shadow-lift) backdrop-blur sm:inset-x-6 sm:bottom-6 sm:p-5" aria-live="polite">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="font-semibold text-navy">{current.name}</p>

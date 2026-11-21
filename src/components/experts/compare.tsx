@@ -39,7 +39,7 @@ export function CompareProvider({ experts, children }: { experts: ConsultantCard
   return (
     <Ctx.Provider value={{ ids, toggle, clear: () => setIds([]) }}>
       {children}
-      {warn && <div role="status" className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-navy px-4 py-3 text-sm font-medium text-white shadow-[var(--shadow-lift)]">{t("experts.compareMax")}</div>}
+      {warn && <div role="status" className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-navy px-4 py-3 text-sm font-medium text-white shadow-(--shadow-lift)">{t("experts.compareMax")}</div>}
       {selected.length > 0 && (
         <div className="sheet fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 backdrop-blur" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
           <div className="container-page flex items-center justify-between gap-4 py-3">

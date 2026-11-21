@@ -2,7 +2,9 @@
   "name": "monprojet",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "description": "Marketplace de mobilité internationale — information, orientation et consultants vérifiés",
   "scripts": {
     "dev": "next dev --turbopack",
@@ -19,6 +21,8 @@
     "check": "npm run typecheck && npm run lint && npm test"
   },
   "dependencies": {
+    "@dicebear/avataaars": "^9.4.2",
+    "@dicebear/core": "^9.4.3",
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
