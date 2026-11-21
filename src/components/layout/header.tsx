@@ -27,8 +27,8 @@ export async function Header() {
     : [];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line/70 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      <div className="container-page flex h-16 items-center justify-between gap-4 lg:h-[72px]">
+    <header className="sticky top-0 z-40 border-b border-line/70 bg-white/90 backdrop-blur supports-backdrop-filter:bg-white/80">
+      <div className="container-page flex h-16 items-center justify-between gap-4 lg:h-18">
         <Logo />
         <NavLinks links={links} />
         <div className="flex items-center gap-2">
