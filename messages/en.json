@@ -681,5 +681,24 @@
     "client": "Client space",
     "consultant": "Consultant space",
     "admin": "Administration"
+  },
+  "assistant": {
+    "cta": "Any questions?",
+    "open": "Open the assistant",
+    "close": "Close the assistant",
+    "title": "Mobility assistant",
+    "subtitle": "Instant answers · AI",
+    "greeting": "Hi 👋 I'm the site assistant. Ask me about studying, working, visas or settling abroad, and about our services.",
+    "suggest1": "How can I study in Canada?",
+    "suggest2": "How much is a consultation?",
+    "suggest3": "Which documents for a tourist visa?",
+    "placeholder": "Type your question…",
+    "send": "Send",
+    "typing": "The assistant is typing…",
+    "talkToExpert": "Talk to a human expert",
+    "disclaimer": "General information, not legal advice. Check official sources.",
+    "error": "Sorry, I couldn't answer. Please try again in a moment.",
+    "rateLimited": "You've sent a lot of messages. Please wait a few minutes, or talk to an expert directly.",
+    "unavailable": "The assistant is unavailable right now. You can talk to an expert directly."
   }
 }

@@ -6,6 +6,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { AssistantWidget } from "@/components/assistant/assistant-widget";
 import "../globals.css";
 import { site } from "@/config/site";
 
@@ -54,6 +55,7 @@ export default async function LocaleLayout({
             {children}
           </main>
           <Footer />
+          <AssistantWidget />
         </NextIntlClientProvider>
       </body>
     </html>

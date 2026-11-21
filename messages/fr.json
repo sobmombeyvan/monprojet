@@ -681,5 +681,24 @@
     "client": "Espace client",
     "consultant": "Espace consultant",
     "admin": "Administration"
+  },
+  "assistant": {
+    "cta": "Une question ?",
+    "open": "Ouvrir l'assistant",
+    "close": "Fermer l'assistant",
+    "title": "Assistant mobilité",
+    "subtitle": "Réponses instantanées · IA",
+    "greeting": "Bonjour 👋 Je suis l'assistant du site. Posez-moi vos questions sur les études, le travail, les visas ou l'installation à l'étranger, et sur nos services.",
+    "suggest1": "Comment étudier au Canada ?",
+    "suggest2": "Combien coûte une consultation ?",
+    "suggest3": "Quels documents pour un visa touristique ?",
+    "placeholder": "Écrivez votre question…",
+    "send": "Envoyer",
+    "typing": "L'assistant écrit…",
+    "talkToExpert": "Parler à un expert humain",
+    "disclaimer": "Informations générales, pas un avis juridique. Vérifiez auprès des sources officielles.",
+    "error": "Désolé, je n'ai pas pu répondre. Réessayez dans un instant.",
+    "rateLimited": "Vous avez envoyé beaucoup de messages. Patientez quelques minutes, ou parlez directement à un expert.",
+    "unavailable": "L'assistant n'est pas disponible pour le moment. Vous pouvez parler directement à un expert."
   }
 }
