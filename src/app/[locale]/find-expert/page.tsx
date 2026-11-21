@@ -72,32 +72,32 @@ export default async function FindExpertPage({
   return (
     <CompareProvider experts={rows}>
       <section className="relative overflow-hidden bg-navy text-white">
-        <div className="container-page relative py-12 sm:py-16">
+        <div className="container-page relative py-8 sm:py-16">
           <p className="text-sm text-white/60">{t("experts.title")}</p>
-          <h1 className="display mt-4 max-w-3xl text-[2.25rem] leading-[1.08] text-white sm:text-5xl">{t("experts.heroTitle")}</h1>
-          <form method="get" action={locale === "en" ? "/en/find-expert" : "/find-expert"} className="mt-8 flex max-w-3xl flex-col gap-2 rounded-2xl bg-white p-2 shadow-[var(--shadow-lift)] sm:flex-row">
+          <h1 className="display mt-3 max-w-3xl text-[1.85rem] leading-[1.1] text-white sm:mt-4 sm:text-5xl">{t("experts.heroTitle")}</h1>
+          <form method="get" action={locale === "en" ? "/en/find-expert" : "/find-expert"} className="mt-6 flex max-w-3xl flex-col gap-2 rounded-2xl bg-white p-2 shadow-[var(--shadow-lift)] sm:mt-8 sm:flex-row">
             <label className="flex flex-1 items-center gap-3 px-3">
               <Search className="size-5 text-muted" />
-              <input name="q" defaultValue={filters.q} placeholder={t("experts.searchPlaceholder")} className="h-12 w-full bg-transparent text-[15px] text-ink outline-none" aria-label={t("experts.keyword")} />
+              <input name="q" defaultValue={filters.q} placeholder={t("experts.searchPlaceholder")} className="h-11 w-full min-w-0 bg-transparent text-[15px] text-ink outline-none sm:h-12" aria-label={t("experts.keyword")} />
             </label>
-            <select name="country" defaultValue={filters.country ?? ""} className="h-12 rounded-[10px] bg-cloud px-3 text-sm text-navy sm:w-56" aria-label={t("experts.country")}>
+            <select name="country" defaultValue={filters.country ?? ""} className="h-11 rounded-[10px] bg-cloud px-3 text-sm text-navy sm:h-12 sm:w-56" aria-label={t("experts.country")}>
               <option value="">{t("common.all")}</option>
               {refData.countries.filter((c) => c.slug !== "cameroon").map((c) => <option key={c.slug} value={c.slug}>{loc(c, "name", locale)}</option>)}
             </select>
             <Button type="submit" variant="accent" size="lg">{t("common.search")}</Button>
           </form>
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="-mx-5 mt-4 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:mt-5 sm:flex-wrap sm:overflow-visible sm:px-0">
             {QUICK.map((s) => {
               const on = filters.procedure === s;
               return (
                 <Link key={s} href={on ? without("procedure") : { pathname: "/find-expert", query: { ...without("procedure").query, procedure: s } }}
-                  className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${on ? "border-white bg-white text-navy" : "border-white/25 text-white/80 hover:border-white hover:text-white"}`}>
+                  className={`shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${on ? "border-white bg-white text-navy" : "border-white/25 text-white/80 hover:border-white hover:text-white"}`}>
                   {name(refData.specialties, s)}
                 </Link>
               );
             })}
           </div>
-          <dl className="mt-10 grid max-w-3xl grid-cols-3 gap-6 border-t border-white/15 pt-8">
+          <dl className="mt-10 hidden max-w-3xl grid-cols-3 gap-6 border-t border-white/15 pt-8 sm:grid">
             <div><dd className="display text-3xl text-white">{all.rows.filter((r) => r.verification_status === "verified").length}</dd><dt className="mt-1 text-xs text-white/55">{t("experts.statVerified")}</dt></div>
             <div><dd className="display text-3xl text-white">{refData.countries.length - 1}</dd><dt className="mt-1 text-xs text-white/55">{t("experts.statDestinations")}</dt></div>
             <div><dd className="display text-3xl text-white">{languages}</dd><dt className="mt-1 text-xs text-white/55">{t("experts.statLanguages")}</dt></div>
@@ -105,9 +105,9 @@ export default async function FindExpertPage({
         </div>
       </section>
 
-      <div className="container-page grid gap-8 py-8 lg:grid-cols-[300px_1fr] lg:gap-10 lg:py-12">
+      <div className="container-page grid gap-6 py-6 lg:grid-cols-[300px_1fr] lg:gap-10 lg:py-12">
         <aside><ExpertFiltersForm refData={refData} values={filters} /></aside>
-        <div>
+        <div className="min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted" aria-live="polite"><span className="display text-2xl text-navy">{total}</span> {t("experts.results", { count: total }).replace(String(total), "").trim()}</p>
             <SortSelect value={filters.sort ?? "relevance"} />
@@ -132,7 +132,7 @@ export default async function FindExpertPage({
                 </div>} />
             </div>
           ) : (
-            <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
               {rows.map((c, i) => (
                 <div key={c.id} className="reveal" style={{ "--i": i } as React.CSSProperties}>
                   <ExpertCard c={c} toolbar={<CompareToggle id={c.id} />} />

@@ -1,5 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { SlidersHorizontal } from "lucide-react";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/form-controls";
 import { Link } from "@/i18n/navigation";
@@ -21,6 +21,7 @@ export async function ExpertFiltersForm({ refData, values }: { refData: Ref; val
   const locale = await getLocale();
   const n = (o: { name_fr: string; name_en: string }) => (locale === "en" ? o.name_en : o.name_fr);
   const action = locale === "en" ? "/en/find-expert" : "/find-expert";
+  const activeCount = Object.entries(values).filter(([k, v]) => v && k !== "sort" && k !== "page").length;
 
   const fields = (p: string) => (
     <div className="space-y-4">
@@ -139,14 +140,16 @@ export async function ExpertFiltersForm({ refData, values }: { refData: Ref; val
       <form method="get" action={action} aria-label={t("experts.filters")} className="lg:hidden">
         {values.sort && <input type="hidden" name="sort" value={values.sort} />}
       <details className="group rounded-[var(--radius-card)] border border-line bg-white">
-        <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 font-semibold text-navy">
+        <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 font-semibold text-navy [&::-webkit-details-marker]:hidden">
           <SlidersHorizontal className="size-4" /> {t("experts.filters")}
+          {activeCount > 0 && <span className="rounded-full bg-teal px-2 py-0.5 text-xs font-semibold text-white">{activeCount}</span>}
+          <ChevronDown className="ml-auto size-4 text-muted transition-transform group-open:rotate-180" />
         </summary>
         <div className="border-t border-line p-4">{fields("m")}</div>
       </details>
       </form>
       {/* Desktop: sticky sidebar */}
-      <form method="get" action={action} aria-label={t("experts.filters")} className="sticky top-24 hidden rounded-[var(--radius-card)] border border-line bg-white p-5 lg:block">
+      <form method="get" action={action} aria-label={t("experts.filters")} className="sticky top-24 hidden max-h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain rounded-[var(--radius-card)] border border-line bg-white p-5 lg:block">
         {values.sort && <input type="hidden" name="sort" value={values.sort} />}
         <p className="mb-4 flex items-center gap-2 font-semibold text-navy">
           <SlidersHorizontal className="size-4" /> {t("experts.filters")}
