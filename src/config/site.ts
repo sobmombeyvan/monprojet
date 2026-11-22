@@ -9,7 +9,7 @@ export const site = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   contact: {
     email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "contact@monprojet.com",
-    phone: process.env.NEXT_PUBLIC_CONTACT_PHONE ?? "",
+    phone: process.env.NEXT_PUBLIC_CONTACT_PHONE || "+237 692 01 82 19",
     city: "Yaoundé, Cameroun",
   },
   /** Ville de départ affichée sur le globe et les cartes */

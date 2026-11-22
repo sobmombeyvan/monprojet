@@ -24,7 +24,7 @@ insert into public.platform_settings (key, value, description, is_public) values
   ('cancellation_policy', '{"free_until_hours": 24, "reschedule_until_hours": 24}', 'Politique d''annulation et de report', true),
   ('supported_currencies', '["XAF", "EUR", "USD"]', 'Devises acceptées', true),
   ('exchange_rates', '{"XAF": 1, "EUR": 655.957, "USD": 600}', 'Taux indicatifs (XAF par unité) — à mettre à jour par un admin', true),
-  ('contact', '{"email": "contact@monprojet.com", "phone": "+237 6XX XX XX XX", "city": "Yaoundé, Cameroun"}', 'Coordonnées affichées', true)
+  ('contact', '{"email": "contact@monprojet.com", "phone": "+237 692 01 82 19", "city": "Yaoundé, Cameroun"}', 'Coordonnées affichées', true)
 on conflict (key) do nothing;
 
 insert into public.languages (code, name_fr, name_en) values
@@ -69,7 +69,11 @@ insert into public.services (slug, name_fr, name_en, description_fr, description
   ('procedural-assistance', 'Assistance procédurale', 'Procedural Assistance',
    'Accompagnement dans la constitution et le suivi de votre dossier. Prix sur devis.',
    'Support preparing and following up your application. Price upon quotation.',
-   'FileStack', 'quote', null, 'XAF', 60, false, 3)
+   'FileStack', 'quote', null, 'XAF', 60, false, 3),
+  ('procedural-document-assistance', 'Assistance documentaire', 'Document Assistance',
+   U&'Aide \00e0 la pr\00e9paration, \00e0 la v\00e9rification et \00e0 l''organisation de vos documents. Prix sur devis.',
+   'Help with preparing, checking and organizing your documents. Price upon quotation.',
+   'FileStack', 'quote', null, 'XAF', 60, false, 4)
 on conflict (slug) do nothing;
 
 insert into public.countries (slug, iso2, name_fr, name_en, region, lon, lat, is_popular, main_languages, goals, opportunities_fr, opportunities_en, overview_fr, overview_en, official_links, source_name, source_url, aliases, status) 
