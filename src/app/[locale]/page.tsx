@@ -49,20 +49,20 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     <>
       {/* ── Hero ── */}
       <section className="relative overflow-hidden bg-navy text-white">
-        <div className="container-page grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:py-24">
-          <div>
+        <div className="container-page grid grid-cols-1 items-center gap-10 py-10 sm:py-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-14 lg:py-24">
+          <div className="min-w-0">
             <p className="text-sm text-white/60">{site.descriptor}</p>
             <h1 className="display mt-5 text-[2.5rem] leading-[1.05] text-white sm:text-[3.6rem]">{t("heroTitle")}</h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-white/70">{t("heroText")}</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button asChild variant="accent" size="lg"><Link href="/countries">{t("ctaExploreOpps")}</Link></Button>
-              <Button asChild variant="light" size="lg"><Link href="/find-expert">{t("ctaConsult")}</Link></Button>
+              <Button asChild variant="accent" size="lg" className="w-full sm:w-auto"><Link href="/countries">{t("ctaExploreOpps")}</Link></Button>
+              <Button asChild variant="light" size="lg" className="w-full sm:w-auto"><Link href="/find-expert">{t("ctaConsult")}</Link></Button>
             </div>
             <div className="mt-10">
               <HeroSearch countries={destinations} specialties={ref.specialties} services={ref.services} />
             </div>
           </div>
-          <InteractiveGlobe destinations={globe} origin={site.origin} />
+          <InteractiveGlobe destinations={globe} origin={site.origin} className="min-w-0" />
         </div>
       </section>
 

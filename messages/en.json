@@ -8,6 +8,10 @@
   "nav": {
     "home": "Home",
     "findExpert": "Find an Expert",
+    "mobileFindExpert": "Experts",
+    "mobileCountries": "Countries",
+    "mobileBooking": "Book",
+    "mobileNavigation": "Primary navigation",
     "services": "Services",
     "countries": "Destinations",
     "knowledge": "Resources",
@@ -21,7 +25,10 @@
     "menu": "Menu",
     "close": "Close",
     "language": "Language",
-    "skip": "Skip to content"
+    "skip": "Skip to content",
+    "installApp": "Install app",
+    "installHelpIos": "On iPhone: tap Share, then Add to Home Screen.",
+    "installHelpBrowser": "Open your browser menu, then choose Install app or Add to Home Screen."
   },
   "footer": {
     "about": "An international platform for global mobility, reliable information and connections with qualified experts.",

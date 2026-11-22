@@ -49,7 +49,7 @@ export async function Header() {
             links={[{ href: "/", label: t("home") }, ...links]}
             accountLinks={accountLinks}
             signedIn={!!user}
-            labels={{ menu: t("menu"), close: t("close"), login: t("login"), register: t("register"), logout: t("logout") }}
+            labels={{ menu: t("menu"), close: t("close"), login: t("login"), register: t("register"), logout: t("logout"), installApp: t("installApp"), installHelpIos: t("installHelpIos"), installHelpBrowser: t("installHelpBrowser") }}
           />
         </div>
       </div>

@@ -105,8 +105,7 @@ export function AssistantWidget() {
           type="button"
           onClick={() => setOpen(true)}
           aria-label={t("open")}
-          className="fixed bottom-5 right-5 z-30 flex items-center gap-2 rounded-full bg-navy py-3 pl-4 pr-5 text-sm font-semibold text-white shadow-(--shadow-lift) transition hover:bg-navy-700 sm:bottom-6 sm:right-6"
-          style={{ marginBottom: "env(safe-area-inset-bottom)" }}
+          className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-5 z-30 flex items-center gap-2 rounded-full bg-navy py-3 pl-4 pr-5 text-sm font-semibold text-white shadow-(--shadow-lift) transition hover:bg-navy-700 sm:right-6 lg:bottom-6"
         >
           <span className="relative">
             <MessageCircle className="size-5" />

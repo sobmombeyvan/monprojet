@@ -5,7 +5,9 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Header } from "@/components/layout/header";
+import { PwaRuntime } from "@/components/layout/pwa-runtime";
 import { Footer } from "@/components/layout/footer";
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { AssistantWidget } from "@/components/assistant/assistant-widget";
 import "../globals.css";
 import { site } from "@/config/site";
@@ -24,6 +26,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     description: t("secondary"),
     alternates: { languages: { fr: "/", en: "/en" } },
     openGraph: { siteName: site.name, type: "website", locale: locale === "en" ? "en_GB" : "fr_FR" },
+    appleWebApp: { capable: true, title: site.name, statusBarStyle: "default" },
+    icons: { icon: "/icon.svg", apple: "/apple-icon" },
   };
 }
 
@@ -45,8 +49,9 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={`${inter.variable} ${jakarta.variable}`}>
-      <body className="flex min-h-dvh flex-col">
+      <body className="flex min-h-dvh flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
         <NextIntlClientProvider>
+          <PwaRuntime />
           <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2">
             {t("skip")}
           </a>
@@ -55,6 +60,7 @@ export default async function LocaleLayout({
             {children}
           </main>
           <Footer />
+          <MobileBottomNav />
           <AssistantWidget />
         </NextIntlClientProvider>
       </body>

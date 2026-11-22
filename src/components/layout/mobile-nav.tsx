@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { signOutAction } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 import { Logo } from "./logo";
+import { PwaInstallButton } from "./pwa-install-button";
 
 export function MobileNav({
   links,
@@ -16,7 +17,7 @@ export function MobileNav({
   links: { href: string; label: string }[];
   accountLinks: { href: string; label: string }[];
   signedIn: boolean;
-  labels: { menu: string; close: string; login: string; register: string; logout: string };
+  labels: { menu: string; close: string; login: string; register: string; logout: string; installApp: string; installHelpIos: string; installHelpBrowser: string };
 }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
@@ -29,7 +30,7 @@ export function MobileNav({
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-navy/40 lg:hidden" />
-        <Dialog.Content className="fixed inset-y-0 right-0 z-50 flex w-[86%] max-w-sm flex-col bg-white shadow-(--shadow-lift) lg:hidden">
+        <Dialog.Content className="fixed inset-y-0 right-0 z-50 flex max-h-dvh w-[86%] max-w-sm flex-col bg-white shadow-(--shadow-lift) lg:hidden">
           <div className="flex h-16 items-center justify-between border-b border-line px-4">
             <Dialog.Title asChild>
               <div onClick={close}>
@@ -53,7 +54,8 @@ export function MobileNav({
               ))}
             </ul>
           </nav>
-          <div className="space-y-2 border-t border-line p-4">
+          <div className="space-y-3 border-t border-line p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <PwaInstallButton labels={{ install: labels.installApp, iosHelp: labels.installHelpIos, browserHelp: labels.installHelpBrowser }} />
             {signedIn ? (
               <form action={signOutAction}>
                 <Button type="submit" variant="outline" className="w-full">

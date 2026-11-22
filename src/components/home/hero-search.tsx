@@ -29,22 +29,22 @@ export function HeroSearch({ countries, specialties, services }: { countries: Op
       ref={form}
       onSubmit={(e) => { e.preventDefault(); router.push({ pathname: "/find-expert", query: values() }); }}
       role="search"
-      className="rounded-2xl bg-white p-2 text-ink shadow-(--shadow-lift)"
+      className="w-full min-w-0 rounded-2xl bg-white p-2 text-ink shadow-(--shadow-lift)"
     >
-      <div className="grid gap-1 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-1 sm:grid-cols-3">
         {fields.map(([n, label, any, items], i) => (
-          <label key={n} className={`block rounded-xl px-3.5 py-2.5 hover:bg-cloud ${i ? "sm:rounded-none sm:border-l sm:border-line" : ""}`}>
+          <label key={n} className={`block min-w-0 rounded-xl px-3.5 py-2.5 hover:bg-cloud ${i ? "sm:rounded-none sm:border-l sm:border-line" : ""}`}>
             <span className="block text-xs font-semibold text-navy">{label}</span>
-            <select name={n} defaultValue="" className="mt-0.5 w-full appearance-none bg-transparent text-sm text-muted outline-none">
+            <select name={n} defaultValue="" className="mt-0.5 w-full min-w-0 appearance-none bg-transparent text-sm text-muted outline-none">
               <option value="">{any}</option>
               {items.map((o) => <option key={o.slug} value={o.slug}>{name(o)}</option>)}
             </select>
           </label>
         ))}
       </div>
-      <div className="mt-2 grid gap-2 sm:grid-cols-[auto_1fr]">
-        <Button type="submit" variant="outline" size="lg"><Search /> {t("searchButton")}</Button>
-        <Button type="button" size="lg" onClick={() => router.push({ pathname: "/solutions", query: values() })}>
+      <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-[auto_1fr]">
+        <Button type="submit" variant="outline" size="lg" className="w-full"><Search /> {t("searchButton")}</Button>
+        <Button type="button" size="lg" className="w-full" onClick={() => router.push({ pathname: "/solutions", query: values() })}>
           <SlidersHorizontal /> {t("profileButton")}
         </Button>
       </div>

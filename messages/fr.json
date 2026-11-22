@@ -8,6 +8,10 @@
   "nav": {
     "home": "Accueil",
     "findExpert": "Trouver un expert",
+    "mobileFindExpert": "Experts",
+    "mobileCountries": "Pays",
+    "mobileBooking": "Réserver",
+    "mobileNavigation": "Navigation principale",
     "services": "Services",
     "countries": "Destinations",
     "knowledge": "Ressources",
@@ -21,7 +25,10 @@
     "menu": "Menu",
     "close": "Fermer",
     "language": "Langue",
-    "skip": "Aller au contenu"
+    "skip": "Aller au contenu",
+    "installApp": "Installer l?application",
+    "installHelpIos": "Sur iPhone : touchez Partager, puis Ajouter ? l??cran d?accueil.",
+    "installHelpBrowser": "Ouvrez le menu du navigateur, puis choisissez Installer l?application ou Ajouter ? l??cran d?accueil."
   },
   "footer": {
     "about": "Plateforme internationale de mobilité, d'information fiable et de mise en relation avec des experts qualifiés.",
