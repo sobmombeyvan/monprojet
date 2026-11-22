@@ -2,13 +2,19 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { site } from "@/config/site";
 import { Logo } from "./logo";
 
 export async function Footer() {
   const t = await getTranslations();
   const supabase = await createClient();
   const { data } = await supabase.from("platform_settings").select("value").eq("key", "contact").maybeSingle();
-  const contact = (data?.value ?? {}) as { email?: string; phone?: string; city?: string };
+  const settings = data?.value as { email?: string; phone?: string; city?: string } | null;
+  const contact = {
+    email: settings?.email || site.contact.email,
+    phone: settings?.phone && !/[x]/i.test(settings.phone) ? settings.phone : site.contact.phone,
+    city: settings?.city || site.contact.city,
+  };
 
   const columns = [
     {
@@ -71,7 +77,10 @@ export async function Footer() {
               </li>
             )}
             {contact.phone && (
-              <li className="flex items-center gap-2"><Phone className="size-4 text-teal" />{contact.phone}</li>
+              <li className="flex items-center gap-2">
+                <Phone className="size-4 shrink-0 text-teal" />
+                <a href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`} className="hover:text-white">{contact.phone}</a>
+              </li>
             )}
             {contact.city && (
               <li className="flex items-center gap-2"><MapPin className="size-4 text-teal" />{contact.city}</li>
