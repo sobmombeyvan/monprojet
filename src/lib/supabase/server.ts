@@ -2,6 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import type { Database } from "./database.types";
+import { fetchWithTimeout } from "./fetch-timeout";
 
 /** Supabase client bound to the current user's session — all queries go through RLS. */
 export async function createClient() {
@@ -10,6 +11,7 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      global: { fetch: fetchWithTimeout },
       cookies: {
         getAll: () => cookieStore.getAll(),
         setAll: (toSet: { name: string; value: string; options: CookieOptions }[]) => {

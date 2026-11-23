@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth/session";
 import { site } from "@/config/site";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getLocale } from "next-intl/server";
+import { redirect } from "@/i18n/navigation";
 
 /** Every admin action re-checks the role server-side; RLS (is_admin()) is the final gate. */
 async function admin() {
@@ -65,34 +67,30 @@ export async function togglePublishAction(form: FormData) {
   revalidateTag(PUBLIC_DATA_TAG);
 }
 
-export async function toggleServicePublicationAction(form: FormData) {
-  const { supabase } = await admin();
-  const id = uuid.parse(form.get("serviceId"));
-  const publish = z.enum(["0", "1"]).parse(form.get("publish")) === "1";
-  const { error } = await supabase.from("services").update({ is_active: publish }).eq("id", id);
-  if (error) throw new Error("service_publish_failed");
+/** Revalidates every page that shows services, then returns to the admin page with a message. */
+async function servicesDone(status: string, kind: "ok" | "error" = "ok"): Promise<never> {
   revalidatePath("/[locale]/admin/services", "page");
   revalidatePath("/[locale]/services", "page");
   revalidatePath("/[locale]/services/[slug]", "page");
+  revalidatePath("/[locale]/booking", "page");
   revalidatePath("/[locale]", "page");
   revalidateTag(PUBLIC_DATA_TAG);
+  return redirect({ href: `/admin/services?${kind}=${status}`, locale: await getLocale() }) as never;
 }
 
-export async function updateServiceAction(form: FormData) {
-  const { supabase } = await admin();
-  const parsed = z.object({
-    id: uuid,
-    slug: z.string().trim().min(2).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-    nameFr: z.string().trim().min(2).max(120),
-    nameEn: z.string().trim().min(2).max(120),
-    descriptionFr: z.string().trim().max(1000),
-    descriptionEn: z.string().trim().max(1000),
-    pricingType: z.enum(["fixed", "quote"]),
-    price: z.string(),
-    currency: z.enum(["XAF", "EUR", "USD"]),
-    isBookable: z.boolean(),
-  }).safeParse({
-    id: form.get("serviceId"),
+const serviceSchema = z.object({
+  slug: z.string().trim().min(2).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  nameFr: z.string().trim().min(2).max(120),
+  nameEn: z.string().trim().min(2).max(120),
+  descriptionFr: z.string().trim().max(1000),
+  descriptionEn: z.string().trim().max(1000),
+  pricingType: z.enum(["fixed", "quote"]),
+  price: z.string(),
+  durationMinutes: z.coerce.number().int().min(15).max(480),
+  isBookable: z.boolean(),
+});
+function readService(form: FormData) {
+  return serviceSchema.safeParse({
     slug: form.get("slug"),
     nameFr: form.get("nameFr"),
     nameEn: form.get("nameEn"),
@@ -100,39 +98,81 @@ export async function updateServiceAction(form: FormData) {
     descriptionEn: form.get("descriptionEn") ?? "",
     pricingType: form.get("pricingType"),
     price: String(form.get("price") ?? "").trim(),
-    currency: form.get("currency"),
+    durationMinutes: form.get("durationMinutes") || 45,
     isBookable: form.get("isBookable") === "on",
   });
-  if (!parsed.success) throw new Error("invalid_service");
+}
+/** Payments go through Fapshi: prices are whole XAF amounts of at least 100. */
+function servicePrice(pricingType: "fixed" | "quote", raw: string): number | null | "invalid" {
+  if (pricingType === "quote") return null;
+  const n = Number(raw);
+  return raw !== "" && Number.isInteger(n) && n >= 100 && n <= 10_000_000 ? n : "invalid";
+}
+
+export async function toggleServicePublicationAction(form: FormData) {
+  const { supabase } = await admin();
+  const id = uuid.parse(form.get("serviceId"));
+  const publish = z.enum(["0", "1"]).parse(form.get("publish")) === "1";
+  const { error } = await supabase.from("services").update({ is_active: publish }).eq("id", id);
+  if (error) return servicesDone("failed", "error");
+  return servicesDone(publish ? "published" : "unpublished");
+}
+
+export async function createServiceAction(form: FormData) {
+  const { supabase } = await admin();
+  const parsed = readService(form);
+  if (!parsed.success) return servicesDone("invalid", "error");
   const d = parsed.data;
-  if (d.pricingType === "fixed" && !d.price) throw new Error("fixed_service_price_required");
-  const price = d.pricingType === "quote"
-    ? null
-    : z.coerce.number().min(0).max(10_000_000).parse(d.price);
-  const { data: existing, error: existingError } = await supabase
-    .from("services")
-    .select("id")
-    .eq("id", d.id)
-    .maybeSingle();
-  if (existingError) throw new Error("service_lookup_failed");
-  if (!existing) throw new Error("service_not_found");
-  const { error } = await supabase.from("services").update({
-    slug: d.slug,
-    name_fr: d.nameFr,
-    name_en: d.nameEn,
-    description_fr: d.descriptionFr || null,
-    description_en: d.descriptionEn || null,
-    pricing_type: d.pricingType,
-    base_price: price,
-    currency: d.currency,
+  const price = servicePrice(d.pricingType, d.price);
+  if (price === "invalid") return servicesDone("price", "error");
+  const { data: last } = await supabase.from("services").select("sort_order").order("sort_order", { ascending: false }).limit(1).maybeSingle();
+  const { error } = await supabase.from("services").insert({
+    slug: d.slug, name_fr: d.nameFr, name_en: d.nameEn,
+    description_fr: d.descriptionFr || null, description_en: d.descriptionEn || null,
+    pricing_type: d.pricingType, base_price: price, currency: "XAF",
+    default_duration_minutes: d.durationMinutes,
     is_bookable: d.pricingType === "fixed" && d.isBookable,
-  }).eq("id", d.id);
-  if (error) throw new Error(error.code === "23505" ? "service_slug_already_exists" : "service_update_failed");
-  revalidatePath("/[locale]/admin/services", "page");
-  revalidatePath("/[locale]/services", "page");
-  revalidatePath("/[locale]/services/[slug]", "page");
-  revalidatePath("/[locale]", "page");
-  revalidateTag(PUBLIC_DATA_TAG);
+    is_active: form.get("publish") === "on",
+    sort_order: Number(last?.sort_order ?? 0) + 1,
+  });
+  if (error) return servicesDone(error.code === "23505" ? "slug" : "failed", "error");
+  return servicesDone("created");
+}
+
+export async function updateServiceAction(form: FormData) {
+  const { supabase } = await admin();
+  const id = uuid.safeParse(form.get("serviceId"));
+  const parsed = readService(form);
+  if (!id.success || !parsed.success) return servicesDone("invalid", "error");
+  const d = parsed.data;
+  const price = servicePrice(d.pricingType, d.price);
+  if (price === "invalid") return servicesDone("price", "error");
+  const { error } = await supabase.from("services").update({
+    slug: d.slug, name_fr: d.nameFr, name_en: d.nameEn,
+    description_fr: d.descriptionFr || null, description_en: d.descriptionEn || null,
+    pricing_type: d.pricingType, base_price: price, currency: "XAF",
+    default_duration_minutes: d.durationMinutes,
+    is_bookable: d.pricingType === "fixed" && d.isBookable,
+  }).eq("id", id.data);
+  if (error) return servicesDone(error.code === "23505" ? "slug" : "failed", "error");
+  return servicesDone("saved");
+}
+
+/**
+ * Deletes a service that has never been booked. Experts' prices for it are removed with it.
+ * A service with bookings must be kept for history: unpublish it instead.
+ */
+export async function deleteServiceAction(form: FormData) {
+  await admin();
+  const id = uuid.safeParse(form.get("serviceId"));
+  if (!id.success) return servicesDone("invalid", "error");
+  const db = createAdminClient();
+  const { count } = await db.from("bookings").select("id", { count: "exact", head: true }).eq("service_id", id.data);
+  if ((count ?? 0) > 0) return servicesDone("in_use", "error");
+  await db.from("consultant_services").delete().eq("service_id", id.data);
+  const { error } = await db.from("services").delete().eq("id", id.data);
+  if (error) return servicesDone(error.code === "23503" ? "in_use" : "failed", "error");
+  return servicesDone("deleted");
 }
 
 export async function updateSettingsAction(form: FormData) {

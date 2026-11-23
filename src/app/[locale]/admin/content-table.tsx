@@ -1,6 +1,7 @@
 import { getLocale } from "next-intl/server";
 import { Badge } from "@/components/ui/primitives";
 import { DataTable } from "@/components/dashboard/data-table";
+import { ConfirmSubmit } from "@/components/ui/confirm-submit";
 import { deleteArticleAction, setContentStatusAction } from "@/lib/actions/admin";
 import { formatDate } from "@/lib/utils";
 
@@ -29,11 +30,12 @@ export async function ContentTable({
         r.last_verified_at ? formatDate(r.last_verified_at, locale) : <Badge key="u" tone="danger">non vérifié</Badge>,
         <div key="a" className="flex flex-wrap gap-1">
           {table === "articles" && (
-            <form action={deleteArticleAction} onSubmit={(event) => {
-              if (!window.confirm("Supprimer définitivement cet article ?")) event.preventDefault();
-            }}>
+            <form action={deleteArticleAction}>
               <input type="hidden" name="id" value={r.id} />
-              <button type="submit" className="rounded-md border border-danger/30 px-2 py-1 text-xs text-danger hover:bg-orange-50">Supprimer</button>
+              <ConfirmSubmit message={locale === "en" ? "Permanently delete this article?" : "Supprimer définitivement cet article ?"}
+                className="rounded-md border border-danger/30 px-3 py-1.5 text-xs font-semibold text-danger hover:bg-orange-50">
+                {locale === "en" ? "Delete" : "Supprimer"}
+              </ConfirmSubmit>
             </form>
           )}
           {next[r.status].map((s) => (
