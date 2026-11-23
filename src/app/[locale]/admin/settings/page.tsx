@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/form-controls";
 import { Alert, Card, CardBody, CardHeader } from "@/components/ui/primitives";
 import { PageTitle } from "@/components/dashboard/shell";
-import { updateServiceAction, updateSettingsAction } from "@/lib/actions/admin";
+import { toggleServicePublicationAction, updateServiceAction, updateSettingsAction } from "@/lib/actions/admin";
 import { paymentsAreLive } from "@/lib/payments";
 import { createClient } from "@/lib/supabase/server";
 
@@ -31,14 +31,21 @@ export default async function AdminSettingsPage({ params }: { params: Promise<{ 
           <CardHeader><h2 className="font-semibold">{locale === "en" ? "Manage services" : "Gérer les services"}</h2></CardHeader>
           <CardBody className="space-y-6">
             {(services ?? []).map((sv) => (
-              <form key={sv.id} action={updateServiceAction} className="space-y-4 rounded-xl border border-line p-4">
-                <input type="hidden" name="serviceId" value={sv.id} />
-                <div className="flex items-center justify-between gap-3">
+              <div key={sv.id} className="space-y-4 rounded-xl border border-line p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <h3 className="font-semibold text-navy">{locale === "en" ? sv.name_en : sv.name_fr}</h3>
-                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${sv.is_active ? "bg-green-50 text-success" : "bg-cloud text-muted"}`}>
-                    {sv.is_active ? (locale === "en" ? "Published" : "Publié") : (locale === "en" ? "Unpublished" : "Dépublié")}
-                  </span>
+                  <form action={toggleServicePublicationAction}>
+                    <input type="hidden" name="serviceId" value={sv.id} />
+                    <input type="hidden" name="publish" value={sv.is_active ? "0" : "1"} />
+                    <Button type="submit" size="sm" variant={sv.is_active ? "outline" : "accent"}>
+                      {sv.is_active
+                        ? (locale === "en" ? "Unpublish service" : "Dépublier le service")
+                        : (locale === "en" ? "Publish service" : "Publier le service")}
+                    </Button>
+                  </form>
                 </div>
+                <form action={updateServiceAction} className="space-y-4">
+                <input type="hidden" name="serviceId" value={sv.id} />
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <Label htmlFor={`slug-${sv.id}`}>Slug</Label>
@@ -80,16 +87,13 @@ export default async function AdminSettingsPage({ params }: { params: Promise<{ 
                 </div>
                 <div className="flex flex-wrap gap-5">
                   <label className="flex items-center gap-2 text-sm text-navy">
-                    <input type="checkbox" name="isActive" defaultChecked={sv.is_active} className="size-4 accent-teal" />
-                    {locale === "en" ? "Published on the site" : "Publié sur le site"}
-                  </label>
-                  <label className="flex items-center gap-2 text-sm text-navy">
                     <input type="checkbox" name="isBookable" defaultChecked={sv.is_bookable} className="size-4 accent-teal" />
                     {locale === "en" ? "Allow booking" : "Permettre la réservation"}
                   </label>
                 </div>
                 <Button type="submit" variant="outline">{locale === "en" ? "Save service" : "Enregistrer le service"}</Button>
-              </form>
+                </form>
+              </div>
             ))}
           </CardBody>
         </Card>

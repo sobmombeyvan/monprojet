@@ -41,7 +41,22 @@ export async function ContentTable({
               <input type="hidden" name="table" value={table} />
               <input type="hidden" name="id" value={r.id} />
               <input type="hidden" name="status" value={s} />
-              <button type="submit" className="rounded-md border border-line px-2 py-1 text-xs text-navy hover:bg-cloud">→ {s}</button>
+              <button
+                type="submit"
+                className={`rounded-md border px-3 py-1.5 text-xs font-semibold ${
+                  s === "published"
+                    ? "border-teal bg-teal text-white hover:bg-teal-600"
+                    : "border-line text-navy hover:bg-cloud"
+                }`}
+              >
+                {s === "published"
+                  ? (locale === "en" ? "Publish article" : "Publier l’article")
+                  : s === "archived"
+                    ? (locale === "en" ? "Unpublish" : "Dépublier")
+                    : s === "in_review"
+                      ? (locale === "en" ? "Submit for review" : "Soumettre à validation")
+                      : (locale === "en" ? "Save as draft" : "Remettre en brouillon")}
+              </button>
             </form>
           ))}
         </div>,

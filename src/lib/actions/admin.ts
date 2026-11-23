@@ -65,6 +65,19 @@ export async function togglePublishAction(form: FormData) {
   revalidateTag(PUBLIC_DATA_TAG);
 }
 
+export async function toggleServicePublicationAction(form: FormData) {
+  const { supabase } = await admin();
+  const id = uuid.parse(form.get("serviceId"));
+  const publish = z.enum(["0", "1"]).parse(form.get("publish")) === "1";
+  const { error } = await supabase.from("services").update({ is_active: publish }).eq("id", id);
+  if (error) throw new Error("service_publish_failed");
+  revalidatePath("/[locale]/admin/settings", "page");
+  revalidatePath("/[locale]/services", "page");
+  revalidatePath("/[locale]/services/[slug]", "page");
+  revalidatePath("/[locale]", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
+}
+
 export async function updateServiceAction(form: FormData) {
   const { supabase } = await admin();
   const parsed = z.object({
@@ -77,7 +90,6 @@ export async function updateServiceAction(form: FormData) {
     pricingType: z.enum(["fixed", "quote"]),
     price: z.string(),
     currency: z.enum(["XAF", "EUR", "USD"]),
-    isActive: z.boolean(),
     isBookable: z.boolean(),
   }).safeParse({
     id: form.get("serviceId"),
@@ -89,7 +101,6 @@ export async function updateServiceAction(form: FormData) {
     pricingType: form.get("pricingType"),
     price: String(form.get("price") ?? "").trim(),
     currency: form.get("currency"),
-    isActive: form.get("isActive") === "on",
     isBookable: form.get("isBookable") === "on",
   });
   if (!parsed.success) throw new Error("invalid_service");
@@ -114,7 +125,6 @@ export async function updateServiceAction(form: FormData) {
     pricing_type: d.pricingType,
     base_price: price,
     currency: d.currency,
-    is_active: d.isActive,
     is_bookable: d.pricingType === "fixed" && d.isBookable,
   }).eq("id", d.id);
   if (error) throw new Error(error.code === "23505" ? "service_slug_already_exists" : "service_update_failed");
