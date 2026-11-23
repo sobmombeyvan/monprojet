@@ -2,10 +2,12 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SolutionsWizard } from "@/components/solutions/solutions-wizard";
 import { getArticles, getReferenceData, type ConsultantCard } from "@/lib/data/queries";
 import { createClient } from "@/lib/supabase/server";
+import { buildMetadata } from "@/lib/seo";
 
-export async function generateMetadata() {
-  const t = await getTranslations("solutions");
-  return { title: t("title"), description: t("lead") };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "solutions" });
+  return buildMetadata({ locale, pathname: "/solutions", title: t("title"), description: t("lead") });
 }
 
 /** Parcours « Trouver les solutions adaptées à mon profil » — préremplissable depuis les filtres de l'accueil. */

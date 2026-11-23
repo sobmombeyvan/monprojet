@@ -7,13 +7,19 @@ import { ExpertCard } from "@/components/experts/expert-card";
 import { SourceNote } from "@/components/countries/source-note";
 import { getArticles, getCountry, searchConsultants } from "@/lib/data/queries";
 import { loc } from "@/lib/utils";
+import { buildMetadata } from "@/lib/seo";
 
 type Row = Record<string, unknown>;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string; locale: string }> }) {
   const { slug, locale } = await params;
   const c = await getCountry(slug);
-  return c ? { title: loc(c, "name", locale), description: loc(c, "overview", locale) } : {};
+  return c ? buildMetadata({
+    locale,
+    pathname: `/countries/${slug}`,
+    title: loc(c, "name", locale),
+    description: loc(c, "overview", locale),
+  }) : {};
 }
 
 export default async function CountryPage({ params }: { params: Promise<{ slug: string; locale: string }> }) {

@@ -15,6 +15,7 @@ export default async function ConsultantLayout({ children, params }: { children:
         { href: "/consultant/bookings", label: t("bookings"), icon: "bookings" },
         { href: "/consultant/availability", label: t("availability"), icon: "availability" },
         { href: "/consultant/services", label: t("services"), icon: "services" },
+        { href: "/consultant/articles", label: "Articles", icon: "articles" },
         { href: "/consultant/earnings", label: t("earnings"), icon: "earnings" },
         { href: "/consultant/reviews", label: t("reviews"), icon: "reviews" },
         { href: "/consultant/profile", label: t("profile"), icon: "profile" },

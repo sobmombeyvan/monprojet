@@ -8,6 +8,17 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getSessionUser } from "@/lib/auth/session";
 import { hit } from "@/lib/rate-limit";
 import { contactSchema, profileSchema } from "@/lib/validation/schemas";
+import { startConsultantRegistrationCheckout } from "@/lib/payments/service";
+import { redirect as nextRedirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
+
+export async function startConsultantRegistrationPaymentAction(): Promise<void> {
+  const user = await getSessionUser();
+  if (!user?.isConsultant) throw new Error("forbidden");
+  const locale = await getLocale();
+  const checkout = await startConsultantRegistrationCheckout({ userId: user.id, locale });
+  nextRedirect(checkout.redirectUrl);
+}
 
 export async function toggleSavedConsultant(consultantId: string): Promise<{ saved?: boolean; error?: string }> {
   const user = await getSessionUser();

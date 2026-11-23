@@ -10,6 +10,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { getConsultantBySlug } from "@/lib/data/queries";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatPrice, loc } from "@/lib/utils";
+import { buildMetadata } from "@/lib/seo";
 
 type Row = Record<string, unknown>;
 
@@ -17,7 +18,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug, locale } = await params;
   const c = await getConsultantBySlug(slug);
   if (!c) return {};
-  return { title: c.professional_name, description: loc(c, "short_bio", locale) || loc(c, "title", locale) };
+  return buildMetadata({
+    locale,
+    pathname: `/experts/${slug}`,
+    title: c.professional_name,
+    description: loc(c, "short_bio", locale) || loc(c, "title", locale),
+  });
 }
 
 export default async function ExpertProfilePage({ params }: { params: Promise<{ slug: string; locale: string }> }) {

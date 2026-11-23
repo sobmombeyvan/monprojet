@@ -7,10 +7,12 @@ import { SectionHeading } from "@/components/home/section-heading";
 import { site } from "@/config/site";
 import { getExpertCountsByCountry, getPublishedCountries, GLOBE_CITIES } from "@/lib/data/queries";
 import { landDots, mapArc, mapX, mapY, type GeoDestination } from "@/lib/geo";
+import { buildMetadata } from "@/lib/seo";
 
-export async function generateMetadata() {
-  const t = await getTranslations("pages");
-  return { title: t("aboutTitle"), description: t("aboutLead") };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "pages" });
+  return buildMetadata({ locale, pathname: "/about", title: t("aboutTitle"), description: t("aboutLead") });
 }
 
 // Connexions affichées sur la carte « Notre réseau »

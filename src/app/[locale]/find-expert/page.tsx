@@ -9,10 +9,12 @@ import { ExpertFiltersForm } from "@/components/experts/filters";
 import { SortSelect } from "@/components/experts/sort-select";
 import { getReferenceData, PAGE_SIZE, searchConsultants, type ExpertFilters } from "@/lib/data/queries";
 import { formatPrice, loc } from "@/lib/utils";
+import { buildMetadata } from "@/lib/seo";
 
-export async function generateMetadata() {
-  const t = await getTranslations("experts");
-  return { title: t("title"), description: t("subtitle") };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "experts" });
+  return buildMetadata({ locale, pathname: "/find-expert", title: t("title"), description: t("subtitle") });
 }
 
 const KEYS: (keyof ExpertFilters)[] = [

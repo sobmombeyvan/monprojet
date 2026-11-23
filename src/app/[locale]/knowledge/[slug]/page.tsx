@@ -9,13 +9,15 @@ import { ShareButton } from "@/components/knowledge/share-button";
 import { getArticle, getArticles } from "@/lib/data/queries";
 import { renderMarkdown } from "@/lib/markdown";
 import { formatDate, loc } from "@/lib/utils";
+import { site } from "@/config/site";
+import { buildMetadata } from "@/lib/seo";
 
 type Row = Record<string, unknown>;
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ slug: string; locale: string }> }) {
+  const { slug, locale } = await params;
   const a = await getArticle(slug);
-  return a ? { title: a.title, description: a.description } : {};
+  return a ? buildMetadata({ locale, pathname: `/knowledge/${slug}`, title: a.title, description: a.description }) : {};
 }
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
@@ -32,6 +34,22 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
   return (
     <article>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: a.title,
+            description: a.description,
+            datePublished: a.published_at,
+            dateModified: a.updated_at,
+            author: { "@type": "Person", name: a.author_display_name },
+            publisher: { "@type": "Organization", name: site.name },
+            inLanguage: locale,
+          }).replace(/</g, "\\u003c"),
+        }}
+      />
       <header className="border-b border-line bg-cloud">
         <div className="container-page max-w-4xl py-10 sm:py-14">
           <div className="flex flex-wrap gap-1.5">

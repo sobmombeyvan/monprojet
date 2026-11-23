@@ -16,6 +16,65 @@ type Result = { ok?: boolean; error?: string };
 const uuid = z.string().uuid();
 const issues = (e: z.ZodError) => Object.fromEntries(e.issues.map((i) => [String(i.path[0]), i.message]));
 
+export async function saveConsultantArticleAction(form: FormData) {
+  const user = await getSessionUser();
+  if (!user?.isConsultant) return;
+  const parsed = z.object({
+    id: z.string().uuid().optional().or(z.literal("")),
+    title: z.string().trim().min(5).max(180),
+    description: z.string().trim().min(20).max(500),
+    body: z.string().trim().min(50).max(50000),
+    categoryId: z.coerce.number().int().positive(),
+    countryId: z.string().uuid().optional().or(z.literal("")),
+    procedureType: z.string().trim().max(80).optional(),
+    locale: z.enum(["fr", "en"]),
+    status: z.enum(["draft", "in_review"]),
+  }).safeParse(Object.fromEntries(form));
+  if (!parsed.success) return;
+  const d = parsed.data;
+  const supabase = await createClient();
+  const baseSlug = d.title
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 70);
+  const slug = d.id ? undefined : `${baseSlug || "article"}-${crypto.randomUUID().slice(0, 8)}`;
+  const row = {
+    title: d.title,
+    description: d.description,
+    body: d.body,
+    category_id: d.categoryId,
+    country_id: d.countryId || null,
+    procedure_type: d.procedureType || null,
+    locale: d.locale,
+    status: d.status,
+  };
+  let error;
+  if (d.id) {
+    ({ error } = await supabase
+      .from("articles")
+      .update(row)
+      .eq("id", d.id)
+      .eq("author_id", user.id));
+  } else {
+    ({ error } = await supabase
+      .from("articles")
+      .insert({
+        ...row,
+        slug,
+        author_id: user.id,
+        author_display_name: user.fullName,
+      }));
+  }
+  if (error) return;
+  revalidatePath("/[locale]/consultant/articles", "page");
+  revalidatePath("/[locale]/knowledge", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
+  return;
+}
+
 // ─── Client ───────────────────────────────────────────────────────
 export async function submitReviewAction(bookingId: string, rating: number, comment: string): Promise<Result> {
   const p = z.object({ bookingId: uuid, rating: z.number().int().min(1).max(5), comment: z.string().max(2000) }).safeParse({ bookingId, rating, comment });

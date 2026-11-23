@@ -129,7 +129,7 @@ export async function sandboxCompleteAction(form: FormData) {
   const db = createAdminClient();
   const { data: p } = await db
     .from("payments")
-    .select("reference, provider_reference, amount, currency, client_id, provider, bookings(reference)")
+    .select("reference, provider_reference, amount, currency, client_id, provider, payment_type, booking_id")
     .eq("reference", paymentRef)
     .single();
   if (!p || p.client_id !== user.id || p.provider !== "sandbox") throw new Error("forbidden");
@@ -148,6 +148,10 @@ export async function sandboxCompleteAction(form: FormData) {
     body,
   });
   const locale = await getLocale();
-  const bookingRef = (p.bookings as unknown as { reference: string }).reference;
-  redirect(`${locale === "en" ? "/en" : ""}/booking/confirmation?ref=${bookingRef}`);
+  if (p.payment_type === "consultant_registration") {
+    redirect(`${locale === "en" ? "/en" : ""}/consultant/profile?payment=success`);
+  }
+  const { data: booking } = await db.from("bookings").select("reference").eq("id", p.booking_id).single();
+  if (!booking) throw new Error("booking_not_found");
+  redirect(`${locale === "en" ? "/en" : ""}/booking/confirmation?ref=${booking.reference}`);
 }

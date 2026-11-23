@@ -8,10 +8,12 @@ import { PageHero } from "@/components/layout/page-hero";
 import { getArticles, getReferenceData } from "@/lib/data/queries";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, loc } from "@/lib/utils";
+import { buildMetadata } from "@/lib/seo";
 
-export async function generateMetadata() {
-  const t = await getTranslations("knowledge");
-  return { title: t("title"), description: t("subtitle") };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "knowledge" });
+  return buildMetadata({ locale, pathname: "/knowledge", title: t("title"), description: t("subtitle") });
 }
 
 export default async function KnowledgePage({

@@ -5,9 +5,10 @@ import { getPublicSetting, getReferenceData } from "@/lib/data/queries";
 import { createClient } from "@/lib/supabase/server";
 import { isoCountryOptions } from "@/lib/iso-countries";
 
-export async function generateMetadata() {
-  const t = await getTranslations("booking");
-  return { title: t("title") };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "booking" });
+  return { title: t("title"), robots: { index: false, follow: false } };
 }
 
 export default async function BookingPage({

@@ -12,6 +12,8 @@ import { requireUser } from "@/lib/auth/session";
 import { getMyConsultant } from "@/lib/data/consultant";
 import { getReferenceData } from "@/lib/data/queries";
 import { formatDate } from "@/lib/utils";
+import { startConsultantRegistrationPaymentAction } from "@/lib/actions/engagement";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function ConsultantProfilePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -20,10 +22,28 @@ export default async function ConsultantProfilePage({ params }: { params: Promis
   const t = await getTranslations();
   const [c, ref] = await Promise.all([getMyConsultant(user.id), getReferenceData()]);
   const n = (o: { name_fr: string; name_en: string }) => (locale === "en" ? o.name_en : o.name_fr);
+  const supabase = await createClient();
+  const { data: registration } = await supabase
+    .from("consultant_registrations")
+    .select("registration_number, fee_required, fee_status, amount_xaf")
+    .eq("user_id", user.id)
+    .maybeSingle();
 
   return (
     <>
       <PageTitle title={t("consultant.profile")} action={c ? <VerificationBadge status={c.verification_status} /> : undefined} />
+      {registration?.fee_required && registration.fee_status !== "paid" && (
+        <Alert tone="warning" className="mb-6" title={locale === "en" ? "Consultant registration fee" : "Frais d'inscription consultant"}>
+          {locale === "en"
+            ? `As consultant #${registration.registration_number}, a one-time registration fee of 25,000 XAF is required before profile activation.`
+            : `En tant que consultant n°${registration.registration_number}, des frais d'inscription uniques de 25 000 FCFA sont requis avant l'activation du profil.`}
+          <form action={startConsultantRegistrationPaymentAction} className="mt-4">
+            <Button type="submit" size="sm">
+              {locale === "en" ? "Pay 25,000 XAF" : "Payer 25 000 FCFA"}
+            </Button>
+          </form>
+        </Alert>
+      )}
       {!c && <Alert className="mb-6" title={t("consultant.onboardingTitle")}>{t("consultant.onboardingText")}</Alert>}
       <Card className="p-6">
         <ConsultantProfileForm

@@ -28,7 +28,7 @@ export default async function SandboxCheckoutPage({
   const supabase = await createClient();
   const { data: p } = await supabase
     .from("payments")
-    .select("reference, amount, currency, status, provider")
+    .select("reference, amount, currency, status, provider, payment_type")
     .eq("reference", payment ?? "")
     .maybeSingle();
   if (!p || p.provider !== "sandbox") notFound();

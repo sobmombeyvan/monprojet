@@ -12,6 +12,72 @@ export function newPaymentReference() {
   return `PAY-${Date.now().toString(36).toUpperCase()}-${randomBytes(3).toString("hex").toUpperCase()}`;
 }
 
+/** Starts the one-time registration fee checkout for a consultant ranked 11th or later. */
+export async function startConsultantRegistrationCheckout(params: { userId: string; locale: string }) {
+  const db = createAdminClient();
+  const { data: registration, error } = await db.rpc("ensure_consultant_registration", {
+    p_user_id: params.userId,
+  });
+  if (error || !registration) throw new Error("registration_not_found");
+  const fee = registration as {
+    fee_required: boolean;
+    fee_status: string;
+    amount_xaf: number;
+  };
+  if (!fee.fee_required || fee.fee_status === "paid") {
+    return { redirectUrl: `${params.locale === "en" ? "/en" : ""}/consultant/profile`, alreadyPaid: true };
+  }
+
+  const existing = await db
+    .from("payments")
+    .select("reference, status")
+    .eq("consultant_registration_id", params.userId)
+    .eq("payment_type", "consultant_registration")
+    .in("status", ["pending", "processing"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let reference: string;
+  if (existing.data) {
+    reference = existing.data.reference;
+  } else {
+    const provider = providerForCurrency("XAF");
+    reference = newPaymentReference();
+    const { error: insertError } = await db.from("payments").insert({
+      reference,
+      booking_id: null,
+      client_id: params.userId,
+      consultant_registration_id: params.userId,
+      payment_type: "consultant_registration",
+      provider: provider.id,
+      amount: 25000,
+      currency: "XAF",
+    });
+    if (insertError) throw new Error("payment_init_failed");
+  }
+
+  const provider = providerForCurrency("XAF");
+  const prefix = params.locale === "en" ? "/en" : "";
+  const session = await provider.createCheckout({
+    paymentReference: reference,
+    bookingReference: `REG-${params.userId.slice(0, 8)}`,
+    amount: fee.amount_xaf,
+    currency: "XAF",
+    description: `${site.name} - frais d'inscription consultant`,
+    customer: { name: "Consultant", email: "" },
+    successUrl: `${siteUrl()}${prefix}/consultant/profile?payment=success`,
+    cancelUrl: `${siteUrl()}${prefix}/consultant/profile?payment=cancelled`,
+    notifyUrl: `${siteUrl()}/api/webhooks/payments/${provider.id}`,
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+  });
+  await db
+    .from("payments")
+    .update({ provider_reference: session.providerReference, is_live: session.isLive })
+    .eq("reference", reference);
+  return { redirectUrl: session.redirectUrl, paymentReference: reference, provider: provider.id, alreadyPaid: false };
+}
+
 /**
  * Starts a checkout for a held booking. Amount and currency come from the
  * database row, never from the browser.

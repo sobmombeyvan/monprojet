@@ -6,12 +6,15 @@ import { Card } from "@/components/ui/primitives";
 import { PageHero } from "@/components/layout/page-hero";
 import { getReferenceData } from "@/lib/data/queries";
 import { formatPrice, loc } from "@/lib/utils";
-
+import { buildMetadata } from "@/lib/seo";
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = { MessagesSquare, ClipboardCheck, FileStack };
 
-export async function generateMetadata() {
-  const t = await getTranslations("nav");
-  return { title: t("services") };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "nav" });
+  return buildMetadata({ locale, pathname: "/services", title: t("services"), description: locale === "en"
+    ? "Discover international mobility services and expert support."
+    : "Découvrez nos services de mobilité internationale et l'accompagnement d'experts." });
 }
 
 export default async function ServicesPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -41,6 +44,97 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
           );
         })}
       </div>
+      <section className="border-t border-line bg-navy py-12 sm:py-16">
+        <div className="container-page">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="eyebrow text-teal">
+              {locale === "en" ? "Our support levels" : "Nos niveaux d'accompagnement"}
+            </p>
+            <h2 className="mt-3 text-3xl text-white sm:text-4xl">
+              {locale === "en"
+                ? "Support adapted to every stage"
+                : "Un accompagnement adapté à chaque étape"}
+            </h2>
+          </div>
+          <ol className="mx-auto mt-10 max-w-4xl space-y-4">
+            {(
+              locale === "en"
+                ? [
+                    {
+                      number: "01.",
+                      title: "Consultation with an expert",
+                      text: "Individual exchanges on a destination, procedure, situation or particular difficulty.",
+                      highlight: "First step to a clear and commercial approach",
+                    },
+                    {
+                      number: "02.",
+                      title: "Profile analysis and guidance",
+                      text: "Assessment of the candidate's characteristics, identification of possibilities and guidance towards suitable options, subject to official criteria.",
+                    },
+                    {
+                      number: "03.",
+                      title: "Document assistance",
+                      text: "Explanation of required documents, consistency analysis, preparation of personalised lists and document verification.",
+                    },
+                    {
+                      number: "04.",
+                      title: "Independent support",
+                      text: "The candidate completes the procedure themselves, with methodological assistance, follow-up and professional advice.",
+                    },
+                    {
+                      number: "05.",
+                      title: "Comprehensive or tailored support",
+                      text: "Responsibility for several stages agreed with the client, according to the project and the expert's competencies.",
+                    },
+                  ]
+                : [
+                    {
+                      number: "01.",
+                      title: "Consultation avec un expert",
+                      text: "Échanges individuels sur une destination, une procédure, une situation ou une difficulté particulière.",
+                      highlight: "Première porte d'entrée commerciale",
+                    },
+                    {
+                      number: "02.",
+                      title: "Analyse et orientation du profil",
+                      text: "Évaluation des caractéristiques du candidat, identification des possibilités et orientation vers les options adaptées, sous réserve des critères officiels.",
+                    },
+                    {
+                      number: "03.",
+                      title: "Assistance documentaire",
+                      text: "Explication des documents requis, analyse de cohérence, préparation de listes personnalisées et vérification documentaire.",
+                    },
+                    {
+                      number: "04.",
+                      title: "Accompagnement autonome",
+                      text: "Le candidat effectue lui-même sa procédure, avec une assistance méthodologique, un suivi et des conseils professionnels.",
+                    },
+                    {
+                      number: "05.",
+                      title: "Accompagnement intégral ou sur mesure",
+                      text: "Prise en charge des différentes étapes convenues avec le client, selon son projet et les compétences de l'expert.",
+                    },
+                  ]
+            ).map((item) => (
+              <li
+                key={item.number}
+                className="rounded-2xl border border-white/10 bg-[#101b32] px-5 py-6 sm:px-7"
+              >
+                <div className="grid gap-3 sm:grid-cols-[5.5rem_1fr] sm:gap-6">
+                  <span className="text-2xl font-semibold text-white/45 sm:text-3xl">{item.number}</span>
+                  <div>
+                    <h3 className="text-xl text-white sm:text-2xl">{item.title}</h3>
+                    <p className="mt-2 leading-7 text-white/65">{item.text}</p>
+                    {"highlight" in item && item.highlight && (
+                      <p className="mt-2 text-sm font-medium text-teal">{item.highlight}</p>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
     </>
   );
 }

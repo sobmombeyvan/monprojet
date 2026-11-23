@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: site.name,
     short_name: site.name.slice(0, 12),
-    description: "Information et expertise pour votre mobilite internationale.",
+    description: "Information, orientation et expertise pour votre mobilité internationale.",
     start_url: "/",
     scope: "/",
     display: "standalone",

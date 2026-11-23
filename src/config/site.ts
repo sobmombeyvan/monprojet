@@ -6,7 +6,7 @@ export const site = {
   name: process.env.NEXT_PUBLIC_SITE_NAME ?? "MonProjet",
   descriptor: "Mobilité internationale & expertise",
   tagline: "Votre parcours, guidé par des experts.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/+$/, ""),
   contact: {
     email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "contact@monprojet.com",
     phone: process.env.NEXT_PUBLIC_CONTACT_PHONE || "+237 692 01 82 19",

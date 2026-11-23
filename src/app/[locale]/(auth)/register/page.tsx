@@ -2,9 +2,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { RegisterForm } from "@/components/auth/auth-forms";
 
-export async function generateMetadata() {
-  const t = await getTranslations("auth");
-  return { title: t("registerTitle") };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "auth" });
+  return { title: t("registerTitle"), robots: { index: false, follow: false } };
 }
 
 export default async function RegisterPage({

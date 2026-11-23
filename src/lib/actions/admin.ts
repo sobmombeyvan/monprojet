@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth/session";
 import { site } from "@/config/site";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /** Every admin action re-checks the role server-side; RLS (is_admin()) is the final gate. */
 async function admin() {
@@ -126,4 +127,39 @@ export async function setContentStatusAction(form: FormData) {
   await supabase.from(table).update(patch).eq("id", uuid.parse(form.get("id")));
   revalidatePath(`/[locale]/admin/${table}`, "page");
   revalidateTag(PUBLIC_DATA_TAG);
+}
+
+export async function deleteArticleAction(form: FormData) {
+  await admin();
+  const id = uuid.parse(form.get("id"));
+  const db = createAdminClient();
+  const { error } = await db.from("articles").delete().eq("id", id);
+  if (error) throw new Error("delete_article_failed");
+  revalidatePath("/[locale]/admin/articles", "page");
+  revalidatePath("/[locale]/knowledge", "page");
+  revalidateTag(PUBLIC_DATA_TAG);
+}
+
+export async function sendAdminConsultantMessageAction(form: FormData) {
+  const { supabase } = await admin();
+  const consultantId = uuid.parse(form.get("consultantId"));
+  const subject = String(form.get("subject") ?? "").trim().slice(0, 150);
+  const body = String(form.get("body") ?? "").trim().slice(0, 4000);
+  if (subject.length < 3 || body.length < 10) throw new Error("invalid_message");
+  const { data: consultant } = await supabase
+    .from("consultants")
+    .select("user_id")
+    .eq("id", consultantId)
+    .single();
+  if (!consultant) throw new Error("consultant_not_found");
+  const db = createAdminClient();
+  const { error } = await db.from("notifications").insert({
+    user_id: consultant.user_id,
+    kind: "admin_message",
+    title: subject,
+    body,
+    link: "/consultant/dashboard",
+  });
+  if (error) throw new Error("send_message_failed");
+  revalidatePath("/[locale]/admin/consultants", "page");
 }

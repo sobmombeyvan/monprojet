@@ -2,10 +2,12 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Card } from "@/components/ui/primitives";
 import { ContactForm } from "@/components/layout/contact-form";
 import { PageHero } from "@/components/layout/page-hero";
+import { buildMetadata } from "@/lib/seo";
 
-export async function generateMetadata() {
-  const t = await getTranslations("pages");
-  return { title: t("contactTitle") };
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "pages" });
+  return buildMetadata({ locale, pathname: "/contact", title: t("contactTitle"), description: t("contactLead") });
 }
 
 export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {

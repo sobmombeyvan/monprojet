@@ -11,6 +11,20 @@ import { getArticles, getExpertCountsByCountry, getReferenceData, GLOBE_CITIES, 
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatPrice, loc } from "@/lib/utils";
 import type { GeoDestination } from "@/lib/geo";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "home" });
+  const tb = await getTranslations({ locale, namespace: "brand" });
+  return buildMetadata({
+    locale,
+    pathname: "",
+    title: `${site.name} — ${tb("tagline")}`,
+    description: t("heroText"),
+  });
+}
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -47,6 +61,19 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            name: t("heroTitle"),
+            description: t("heroText"),
+            inLanguage: locale,
+            isPartOf: { "@type": "WebSite", name: site.name, url: site.url },
+          }).replace(/</g, "\\u003c"),
+        }}
+      />
       {/* ── Hero ── */}
       <section className="relative overflow-hidden bg-navy text-white">
         <div className="container-page grid grid-cols-1 items-center gap-10 py-10 sm:py-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-14 lg:py-24">
