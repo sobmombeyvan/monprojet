@@ -65,13 +65,63 @@ export async function togglePublishAction(form: FormData) {
   revalidateTag(PUBLIC_DATA_TAG);
 }
 
-export async function updateServicePriceAction(form: FormData) {
+export async function updateServiceAction(form: FormData) {
   const { supabase } = await admin();
-  const id = uuid.parse(form.get("serviceId"));
-  const raw = String(form.get("price") ?? "");
-  const price = raw === "" ? null : z.coerce.number().min(0).max(10_000_000).parse(raw);
-  await supabase.from("services").update({ base_price: price, pricing_type: price === null ? "quote" : "fixed", is_bookable: price !== null }).eq("id", id);
+  const parsed = z.object({
+    id: uuid,
+    slug: z.string().trim().min(2).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    nameFr: z.string().trim().min(2).max(120),
+    nameEn: z.string().trim().min(2).max(120),
+    descriptionFr: z.string().trim().max(1000),
+    descriptionEn: z.string().trim().max(1000),
+    pricingType: z.enum(["fixed", "quote"]),
+    price: z.string(),
+    currency: z.enum(["XAF", "EUR", "USD"]),
+    isActive: z.boolean(),
+    isBookable: z.boolean(),
+  }).safeParse({
+    id: form.get("serviceId"),
+    slug: form.get("slug"),
+    nameFr: form.get("nameFr"),
+    nameEn: form.get("nameEn"),
+    descriptionFr: form.get("descriptionFr") ?? "",
+    descriptionEn: form.get("descriptionEn") ?? "",
+    pricingType: form.get("pricingType"),
+    price: String(form.get("price") ?? "").trim(),
+    currency: form.get("currency"),
+    isActive: form.get("isActive") === "on",
+    isBookable: form.get("isBookable") === "on",
+  });
+  if (!parsed.success) throw new Error("invalid_service");
+  const d = parsed.data;
+  if (d.pricingType === "fixed" && !d.price) throw new Error("fixed_service_price_required");
+  const price = d.pricingType === "quote"
+    ? null
+    : z.coerce.number().min(0).max(10_000_000).parse(d.price);
+  const { data: existing, error: existingError } = await supabase
+    .from("services")
+    .select("id")
+    .eq("id", d.id)
+    .maybeSingle();
+  if (existingError) throw new Error("service_lookup_failed");
+  if (!existing) throw new Error("service_not_found");
+  const { error } = await supabase.from("services").update({
+    slug: d.slug,
+    name_fr: d.nameFr,
+    name_en: d.nameEn,
+    description_fr: d.descriptionFr || null,
+    description_en: d.descriptionEn || null,
+    pricing_type: d.pricingType,
+    base_price: price,
+    currency: d.currency,
+    is_active: d.isActive,
+    is_bookable: d.pricingType === "fixed" && d.isBookable,
+  }).eq("id", d.id);
+  if (error) throw new Error(error.code === "23505" ? "service_slug_already_exists" : "service_update_failed");
   revalidatePath("/[locale]/admin/settings", "page");
+  revalidatePath("/[locale]/services", "page");
+  revalidatePath("/[locale]/services/[slug]", "page");
+  revalidatePath("/[locale]", "page");
   revalidateTag(PUBLIC_DATA_TAG);
 }
 

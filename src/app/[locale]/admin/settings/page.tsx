@@ -1,9 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Button } from "@/components/ui/button";
-import { Input, Label } from "@/components/ui/form-controls";
+import { Input, Label, Select, Textarea } from "@/components/ui/form-controls";
 import { Alert, Card, CardBody, CardHeader } from "@/components/ui/primitives";
 import { PageTitle } from "@/components/dashboard/shell";
-import { updateServicePriceAction, updateSettingsAction } from "@/lib/actions/admin";
+import { updateServiceAction, updateSettingsAction } from "@/lib/actions/admin";
 import { paymentsAreLive } from "@/lib/payments";
 import { createClient } from "@/lib/supabase/server";
 
@@ -28,16 +28,67 @@ export default async function AdminSettingsPage({ params }: { params: Promise<{ 
       )}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader><h2 className="font-semibold">{t("servicePrices")}</h2></CardHeader>
-          <CardBody className="space-y-3">
+          <CardHeader><h2 className="font-semibold">{locale === "en" ? "Manage services" : "Gérer les services"}</h2></CardHeader>
+          <CardBody className="space-y-6">
             {(services ?? []).map((sv) => (
-              <form key={sv.id} action={updateServicePriceAction} className="flex items-end gap-2">
+              <form key={sv.id} action={updateServiceAction} className="space-y-4 rounded-xl border border-line p-4">
                 <input type="hidden" name="serviceId" value={sv.id} />
-                <div className="flex-1">
-                  <Label htmlFor={`p-${sv.id}`}>{locale === "en" ? sv.name_en : sv.name_fr} ({sv.currency})</Label>
-                  <Input id={`p-${sv.id}`} name="price" type="number" min={0} step={5} defaultValue={sv.base_price ?? ""} placeholder="Vide = sur devis" />
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="font-semibold text-navy">{locale === "en" ? sv.name_en : sv.name_fr}</h3>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${sv.is_active ? "bg-green-50 text-success" : "bg-cloud text-muted"}`}>
+                    {sv.is_active ? (locale === "en" ? "Published" : "Publié") : (locale === "en" ? "Unpublished" : "Dépublié")}
+                  </span>
                 </div>
-                <Button type="submit" variant="outline">OK</Button>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <Label htmlFor={`slug-${sv.id}`}>Slug</Label>
+                    <Input id={`slug-${sv.id}`} name="slug" defaultValue={sv.slug} pattern="[a-z0-9]+(-[a-z0-9]+)*" required />
+                  </div>
+                  <div>
+                    <Label htmlFor={`currency-${sv.id}`}>{locale === "en" ? "Currency" : "Devise"}</Label>
+                    <Select id={`currency-${sv.id}`} name="currency" defaultValue={sv.currency}>
+                      {["XAF", "EUR", "USD"].map((currency) => <option key={currency} value={currency}>{currency}</option>)}
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor={`name-fr-${sv.id}`}>Nom (FR)</Label>
+                    <Input id={`name-fr-${sv.id}`} name="nameFr" defaultValue={sv.name_fr} required maxLength={120} />
+                  </div>
+                  <div>
+                    <Label htmlFor={`name-en-${sv.id}`}>Name (EN)</Label>
+                    <Input id={`name-en-${sv.id}`} name="nameEn" defaultValue={sv.name_en} required maxLength={120} />
+                  </div>
+                  <div>
+                    <Label htmlFor={`description-fr-${sv.id}`}>Description (FR)</Label>
+                    <Textarea id={`description-fr-${sv.id}`} name="descriptionFr" defaultValue={sv.description_fr ?? ""} maxLength={1000} />
+                  </div>
+                  <div>
+                    <Label htmlFor={`description-en-${sv.id}`}>Description (EN)</Label>
+                    <Textarea id={`description-en-${sv.id}`} name="descriptionEn" defaultValue={sv.description_en ?? ""} maxLength={1000} />
+                  </div>
+                  <div>
+                    <Label htmlFor={`pricing-type-${sv.id}`}>{locale === "en" ? "Pricing" : "Tarification"}</Label>
+                    <Select id={`pricing-type-${sv.id}`} name="pricingType" defaultValue={sv.pricing_type}>
+                      <option value="fixed">{locale === "en" ? "Fixed price" : "Prix fixe"}</option>
+                      <option value="quote">{locale === "en" ? "Upon quotation" : "Sur devis"}</option>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor={`price-${sv.id}`}>{locale === "en" ? "Price" : "Prix"} ({sv.currency})</Label>
+                    <Input id={`price-${sv.id}`} name="price" type="number" min={0} max={10000000} step="any" defaultValue={sv.base_price ?? ""} placeholder={locale === "en" ? "Required for fixed price" : "Requis pour un prix fixe"} />
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-5">
+                  <label className="flex items-center gap-2 text-sm text-navy">
+                    <input type="checkbox" name="isActive" defaultChecked={sv.is_active} className="size-4 accent-teal" />
+                    {locale === "en" ? "Published on the site" : "Publié sur le site"}
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-navy">
+                    <input type="checkbox" name="isBookable" defaultChecked={sv.is_bookable} className="size-4 accent-teal" />
+                    {locale === "en" ? "Allow booking" : "Permettre la réservation"}
+                  </label>
+                </div>
+                <Button type="submit" variant="outline">{locale === "en" ? "Save service" : "Enregistrer le service"}</Button>
               </form>
             ))}
           </CardBody>

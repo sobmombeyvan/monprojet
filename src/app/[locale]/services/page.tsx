@@ -25,105 +25,81 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
   return (
     <>
       <PageHero title={t("nav.services")} subtitle={t("home.servicesTitle")} />
-      <section className="border-t border-line bg-navy py-12 sm:py-16">
-        <div className="container-page">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="eyebrow text-teal">
-              {locale === "en" ? "Our support levels" : "Nos niveaux d'accompagnement"}
-            </p>
-            <h2 className="mt-3 text-3xl text-white sm:text-4xl">
-              {locale === "en"
-                ? "Support adapted to every stage"
-                : "Un accompagnement adapté à chaque étape"}
-            </h2>
-          </div>
-          <ol className="mx-auto mt-10 max-w-4xl space-y-4">
-            {(
-              locale === "en"
-                ? [
-                    {
-                      number: "01.",
-                      title: "Consultation with an expert",
-                      text: "Individual exchanges on a destination, procedure, situation or particular difficulty.",
-                      highlight: "First step to a clear and commercial approach",
-                    },
-                    {
-                      number: "02.",
-                      title: "Profile analysis and guidance",
-                      text: "Assessment of the candidate's characteristics, identification of possibilities and guidance towards suitable options, subject to official criteria.",
-                    },
-                    {
-                      number: "03.",
-                      title: "Document assistance",
-                      text: "Explanation of required documents, consistency analysis, preparation of personalised lists and document verification.",
-                    },
-                    {
-                      number: "04.",
-                      title: "Independent support",
-                      text: "The candidate completes the procedure themselves, with methodological assistance, follow-up and professional advice.",
-                    },
-                    {
-                      number: "05.",
-                      title: "Comprehensive or tailored support",
-                      text: "Responsibility for several stages agreed with the client, according to the project and the expert's competencies.",
-                    },
-                  ]
-                : [
-                    {
-                      number: "01.",
-                      title: "Consultation avec un expert",
-                      text: "Échanges individuels sur une destination, une procédure, une situation ou une difficulté particulière.",
-                      highlight: "Première porte d'entrée commerciale",
-                    },
-                    {
-                      number: "02.",
-                      title: "Analyse et orientation du profil",
-                      text: "Évaluation des caractéristiques du candidat, identification des possibilités et orientation vers les options adaptées, sous réserve des critères officiels.",
-                    },
-                    {
-                      number: "03.",
-                      title: "Assistance documentaire",
-                      text: "Explication des documents requis, analyse de cohérence, préparation de listes personnalisées et vérification documentaire.",
-                    },
-                    {
-                      number: "04.",
-                      title: "Accompagnement autonome",
-                      text: "Le candidat effectue lui-même sa procédure, avec une assistance méthodologique, un suivi et des conseils professionnels.",
-                    },
-                    {
-                      number: "05.",
-                      title: "Accompagnement intégral ou sur mesure",
-                      text: "Prise en charge des différentes étapes convenues avec le client, selon son projet et les compétences de l'expert.",
-                    },
-                  ]
-            ).map((item) => (
-              <li
-                key={item.number}
-                className="rounded-2xl border border-white/10 bg-[#101b32] px-5 py-6 sm:px-7"
-              >
-                <div className="grid gap-3 sm:grid-cols-[5.5rem_1fr] sm:gap-6">
-                  <span className="text-2xl font-semibold text-white/45 sm:text-3xl">{item.number}</span>
-                  <div>
-                    <h3 className="text-xl text-white sm:text-2xl">{item.title}</h3>
-                    <p className="mt-2 leading-7 text-white/65">{item.text}</p>
-                    {"highlight" in item && item.highlight && (
-                      <p className="mt-2 text-sm font-medium text-teal">{item.highlight}</p>
-                    )}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
       <section className="container-page py-12">
         <div className="mb-7">
-          <p className="eyebrow">{locale === "en" ? "Bookable offers" : "Offres réservables"}</p>
           <h2 className="mt-2 text-2xl sm:text-3xl">
             {locale === "en" ? "Explore our services" : "Découvrez nos services"}
           </h2>
         </div>
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {(locale === "en"
+            ? [
+                {
+                  number: "01",
+                  title: "Consultation with an expert",
+                  text: "Individual exchanges on a destination, procedure, situation or particular difficulty.",
+                  highlight: "A first step towards a clear plan.",
+                },
+                {
+                  number: "02",
+                  title: "Profile analysis and guidance",
+                  text: "Assessment of your profile and options, with guidance based on official criteria.",
+                },
+                {
+                  number: "03",
+                  title: "Document assistance",
+                  text: "Explanation of required documents, consistency review, tailored checklists and document verification.",
+                },
+                {
+                  number: "04",
+                  title: "Independent support",
+                  text: "Complete your procedure yourself with methodological assistance, follow-up and professional advice.",
+                },
+                {
+                  number: "05",
+                  title: "Comprehensive or tailored support",
+                  text: "Support through the stages agreed with your expert, based on your project and their competencies.",
+                },
+              ]
+            : [
+                {
+                  number: "01",
+                  title: "Consultation avec un expert",
+                  text: "Échanges individuels sur une destination, une procédure, une situation ou une difficulté particulière.",
+                  highlight: "Une première étape pour clarifier votre projet.",
+                },
+                {
+                  number: "02",
+                  title: "Analyse et orientation du profil",
+                  text: "Évaluation de votre profil et de vos possibilités, avec une orientation fondée sur les critères officiels.",
+                },
+                {
+                  number: "03",
+                  title: "Assistance documentaire",
+                  text: "Explication des documents requis, vérification de cohérence, listes personnalisées et contrôle documentaire.",
+                },
+                {
+                  number: "04",
+                  title: "Accompagnement autonome",
+                  text: "Effectuez vous-même votre procédure avec une assistance méthodologique, un suivi et des conseils professionnels.",
+                },
+                {
+                  number: "05",
+                  title: "Accompagnement intégral ou sur mesure",
+                  text: "Accompagnement aux étapes convenues avec votre expert, selon votre projet et ses compétences.",
+                },
+              ]
+          ).map((item) => (
+            <Card key={item.number} className="flex flex-col p-6">
+              <span className="text-sm font-bold tracking-wider text-teal-600">{item.number}</span>
+              <h3 className="mt-3 text-xl font-semibold">{item.title}</h3>
+              <p className="mt-2 flex-1 text-sm leading-6 text-muted">{item.text}</p>
+              {item.highlight && <p className="mt-3 text-sm font-medium text-teal-600">{item.highlight}</p>}
+              <Button asChild className="mt-5">
+                <Link href="/find-expert">{locale === "en" ? "Find an expert" : "Trouver un expert"}</Link>
+              </Button>
+            </Card>
+          ))}
           {services.map((s) => {
             const Icon = ICONS[s.icon ?? ""] ?? MessagesSquare;
             return (
