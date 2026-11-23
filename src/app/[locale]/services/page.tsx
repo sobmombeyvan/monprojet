@@ -25,25 +25,6 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
   return (
     <>
       <PageHero title={t("nav.services")} subtitle={t("home.servicesTitle")} />
-      <div className="container-page grid gap-6 py-12 md:grid-cols-3">
-        {services.map((s) => {
-          const Icon = ICONS[s.icon ?? ""] ?? MessagesSquare;
-          return (
-            <Card key={s.id} className="flex flex-col p-6">
-              <div className="grid size-12 place-items-center rounded-xl bg-teal-50 text-teal-600"><Icon className="size-6" /></div>
-              <h2 className="mt-5 text-xl font-semibold">{loc(s, "name", locale)}</h2>
-              <p className="mt-2 flex-1 text-sm leading-6 text-muted">{loc(s, "description", locale)}</p>
-              <p className="mt-6 text-2xl font-semibold text-navy">
-                {s.pricing_type === "quote" ? t("common.onQuote") : formatPrice(s.base_price, s.currency, locale)}
-              </p>
-              <div className="mt-5 grid gap-2">
-                <Button asChild><Link href={`/booking?service=${s.slug}`}>{s.is_bookable ? t("common.book") : t("booking.requestQuote")}</Link></Button>
-                <Button asChild variant="ghost"><Link href={`/services/${s.slug}`}>{t("home.learnMore")} <ArrowRight /></Link></Button>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
       <section className="border-t border-line bg-navy py-12 sm:py-16">
         <div className="container-page">
           <div className="mx-auto max-w-3xl text-center">
@@ -133,6 +114,33 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
               </li>
             ))}
           </ol>
+        </div>
+      </section>
+      <section className="container-page py-12">
+        <div className="mb-7">
+          <p className="eyebrow">{locale === "en" ? "Bookable offers" : "Offres réservables"}</p>
+          <h2 className="mt-2 text-2xl sm:text-3xl">
+            {locale === "en" ? "Explore our services" : "Découvrez nos services"}
+          </h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {services.map((s) => {
+            const Icon = ICONS[s.icon ?? ""] ?? MessagesSquare;
+            return (
+              <Card key={s.id} className="flex flex-col p-6">
+                <div className="grid size-12 place-items-center rounded-xl bg-teal-50 text-teal-600"><Icon className="size-6" /></div>
+                <h3 className="mt-5 text-xl font-semibold">{loc(s, "name", locale)}</h3>
+                <p className="mt-2 flex-1 text-sm leading-6 text-muted">{loc(s, "description", locale)}</p>
+                <p className="mt-6 text-2xl font-semibold text-navy">
+                  {s.pricing_type === "quote" ? t("common.onQuote") : formatPrice(s.base_price, s.currency, locale)}
+                </p>
+                <div className="mt-5 grid gap-2">
+                  <Button asChild><Link href={`/booking?service=${s.slug}`}>{s.is_bookable ? t("common.book") : t("booking.requestQuote")}</Link></Button>
+                  <Button asChild variant="ghost"><Link href={`/services/${s.slug}`}>{t("home.learnMore")} <ArrowRight /></Link></Button>
+                </div>
+              </Card>
+            );
+          })}
         </div>
       </section>
     </>
