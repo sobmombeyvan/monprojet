@@ -5,8 +5,6 @@ import { AdminMetricCards, getAdminMetrics, MonthlyChart } from "@/components/da
 import { PageTitle } from "@/components/dashboard/shell";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/utils";
-import { Link } from "@/i18n/navigation";
-import { Button } from "@/components/ui/button";
 
 export default async function AdminOverview({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -22,13 +20,6 @@ export default async function AdminOverview({ params }: { params: Promise<{ loca
     <>
       <PageTitle title={t("overview")} />
       <AdminMetricCards m={m} />
-      <Card className="mt-6">
-        <CardHeader><h2 className="font-semibold">{locale === "en" ? "Content management" : "Gestion du contenu"}</h2></CardHeader>
-        <CardBody className="flex flex-wrap gap-3">
-          <Button asChild><Link href="/admin/articles">{locale === "en" ? "Review and publish articles" : "Examiner et publier les articles"}</Link></Button>
-          <Button asChild variant="outline"><Link href="/admin/settings">{locale === "en" ? "Manage and publish services" : "Gérer et publier les services"}</Link></Button>
-        </CardBody>
-      </Card>
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader><h2 className="font-semibold">{t("totalBookings")} / mois</h2></CardHeader>

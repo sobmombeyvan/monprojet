@@ -22,6 +22,7 @@ export default async function AdminLayout({ children, params }: { children: Reac
         { href: "/admin/commissions", label: t("commissions"), icon: "commissions" },
         { href: "/admin/countries", label: t("countries"), icon: "countries" },
         { href: "/admin/articles", label: t("articles"), icon: "articles" },
+        { href: "/admin/services", label: locale === "en" ? "Services" : "Services", icon: "services" },
         { href: "/admin/analytics", label: t("analytics"), icon: "analytics" },
         { href: "/admin/settings", label: t("settings"), icon: "settings" },
       ]}

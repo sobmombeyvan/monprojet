@@ -71,7 +71,7 @@ export async function toggleServicePublicationAction(form: FormData) {
   const publish = z.enum(["0", "1"]).parse(form.get("publish")) === "1";
   const { error } = await supabase.from("services").update({ is_active: publish }).eq("id", id);
   if (error) throw new Error("service_publish_failed");
-  revalidatePath("/[locale]/admin/settings", "page");
+  revalidatePath("/[locale]/admin/services", "page");
   revalidatePath("/[locale]/services", "page");
   revalidatePath("/[locale]/services/[slug]", "page");
   revalidatePath("/[locale]", "page");
@@ -128,7 +128,7 @@ export async function updateServiceAction(form: FormData) {
     is_bookable: d.pricingType === "fixed" && d.isBookable,
   }).eq("id", d.id);
   if (error) throw new Error(error.code === "23505" ? "service_slug_already_exists" : "service_update_failed");
-  revalidatePath("/[locale]/admin/settings", "page");
+  revalidatePath("/[locale]/admin/services", "page");
   revalidatePath("/[locale]/services", "page");
   revalidatePath("/[locale]/services/[slug]", "page");
   revalidatePath("/[locale]", "page");
